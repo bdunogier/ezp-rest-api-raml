@@ -45,9 +45,8 @@ function addFeature( &$resources, Feature $feature )
     );
     $method = $feature->getMethod();
     $resourceProperties = ['description' => $feature->getDescription()];
-    foreach ( $feature->getHeaders() as $headerName => $properties ) {
-        $resourceProperties['headers'][$headerName] = $properties;
-    }
+    $resourceProperties['headers'] = $feature->getHeaders();
+    $resourceProperties['responses'] = $feature->getErrorCodes();
 
     $leafVariable = '$resources' . implode( $resourceParts ) . "['$method']";
 
@@ -173,6 +172,23 @@ class Feature extends ElementBase
     function getDescription()
     {
         return $this->getTableRowContent( 'Description:' );
+    }
+
+    function getErrorCodes()
+    {
+        $responses = [];
+        $xpathQuery = sprintf(
+            "//div[@id='%s']/table//tr[th/text()='Error Codes:']/td/table/tbody/tr",
+            $this->getId()
+        );
+
+        foreach ( $this->xpathQuery( $xpathQuery ) as $errorCodeNode ) {
+            $errorCodeValue = $this->xpathNodeValue( $this->xpath->query( './/th', $errorCodeNode ) );
+            $errorCodeDescription = $this->xpathNodeValue( $this->xpath->query( './/td', $errorCodeNode ) );
+            $responses[$errorCodeValue] = ['description' => $errorCodeDescription];
+        }
+
+        return $responses;
     }
 
     /**

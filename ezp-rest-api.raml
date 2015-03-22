@@ -2,95 +2,250 @@
     /objects:
         post:
             description: 'Creates a new content draft assigned to the authenticated user. If a different userId is given in the input it is assigned to the given user but this required special rights for the authenticated user (this is useful for content staging where the transfer process does not have to authenticate with the user which created the content object in the source server). The user has to publish the content if it should be visible.'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.Content+xml
+                        - application/vnd.ez.api.Content+json
+                        - application/vnd.ez.api.ContentInfo+xml
+                        - application/vnd.ez.api.ContentInfo+json
+                content-type:
+                    enum:
+                        - application/vnd.ez.api.ContentCreate+json
+                        - application/vnd.ez.api.ContentCreate+xml
+            responses: {  }
         get:
             description: 'loads the content for a given remote id'
-        /{contentId}:
+            headers: {  }
+            responses:
+                404:
+                    description: 'If the content with the given remote id does not exist'
+        /<ID>:
             get:
-                description: |
-                    Loads the content object for the given id.
-                    Depending on the Accept header, the current version can be embedded.
+                description: 'Loads the content object for the given id. Depending on the Accept header the current version is embedded (i.e the current published version or if not exists the draft of the authenticated user)'
                 headers:
                     accept:
-                        default: application/vnd.ez.api.ContentInfo+xml
-                        description: |
-                            `application/vnd.ez.api.ContentInfo` will return a ContentInfo, e.g. Content Metadata,
-                            while `application/vnd.ez.api.Content` will return Content with a Version as well as Fields. The Version will be either the Published One, if any, or the current User's Draft Version, if any.
+                        enum:
+                            - application/vnd.ez.api.Content+xml
+                            - application/vnd.ez.api.Content+json
+                            - application/vnd.ez.api.ContentInfo+xml
+                            - application/vnd.ez.api.ContentInfo+json
+                    if-none-match:
+                        description: '<etag> If the provided etag matches the current etag then a 304 Not Modified is returned. The etag changes if the meta data was changed - this happens also if there is a new published version..'
+                responses:
+                    401:
+                        description: 'If the user is not authorized to read this object. This could also happen if there is no published version yet and another user owns a draft of this content'
+                    404:
+                        description: 'If the ID is not found'
+            patch:
+                description: 'this method updates the content metadata which is independent from a version.'
+                headers:
+                    accept:
                         enum:
                             - application/vnd.ez.api.ContentInfo+xml
                             - application/vnd.ez.api.ContentInfo+json
-                            - application/vnd.ez.api.Content+xml
-                            - application/vnd.ez.api.Content+json
-                queryParameters:
-                    languages:
-                        required: false
-                        description: A comma separated list of locales to return in the Version
-                        example: fre-FR,eng-GB
+                    if-match:
+                        description: '<etag> Causes to patch only if the specified etag is the current one. Otherwise a 412 is returned.'
+                    content-type:
+                        enum:
+                            - application/vnd.ez.api.ContentUpdate+json
+                            - application/vnd.ez.api.ContentUpdate+xml
                 responses:
-                    200:
-                        body:
-                            application/vnd.ez.api.ContentInfo+xml:
-                            application/vnd.ez.api.ContentInfo+json:
-                            application/vnd.ez.api.Content+xml:
-                            application/vnd.ez.api.Content+json:
-                    404:
-                        description: No content found with this id
+                    400:
+                        description: 'If the Input does not match the input schema definition.'
                     401:
-                        description: The User is not authorized to view this Content
-            patch:
-                description: 'this method updates the content metadata which is independent from a version.'
+                        description: 'If the user is not authorized to update this object'
+                    404:
+                        description: 'If the content id does not exist'
+                    412:
+                        description: 'If the current ETag does not match with the provided one in the If-Match header'
+                    415:
+                        description: 'If the media-type is not one of those specified in Headers'
             delete:
                 description: 'The content is deleted. If the content has locations (which is required in 4.x) on delete all locations assigned the content object are deleted via delete subtree.'
+                headers: {  }
+                responses:
+                    404:
+                        description: 'content object was not found'
+                    401:
+                        description: 'If the user is not authorized to delete this object'
             post:
                 description: 'Creates a new content object as copy under the given parent location given in the destination header.'
                 headers:
-                    accept:
-                        enum:
-                            - application/vnd.ez.api.ContentInfo+xml
-                            - application/vnd.ez.api.ContentInfo+json
-                            - application/vnd.ez.api.Content+xml
-                            - application/vnd.ez.api.Content+json
-                    content-type:
-                        enum: [application/vnd.ez.api.ContentCreate+json, application/vnd.ez.api.ContentCreate+xml]
-                responses:
-                    201:
-                    400:
-                        description: If the Input does not match the input schema definition or the validation on a field fails
-                    401:
-                        description: If the user is not authorized to create this object in this location
-                    404:
-                        description: If a parent location in specified in the request body (see ContentCreate) and it does not exist
+                    destination:
+                        description: n/a
+                responses: {  }
             /versions:
                 get:
                     description: 'Returns a list of all versions of the content. This method does not include fields and relations in the Version elements of the response.'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.VersionList+xml
+                                - application/vnd.ez.api.VersionList+json
+                    responses:
+                        401:
+                            description: 'If the user has no permission to read the versions'
                 /<versionNo>:
                     get:
                         description: 'Loads a specific version of a content object. This method returns fields and relations'
+                        headers:
+                            if-none-match:
+                                description: '<etag> Only return the version if the given <etag> is the not current one otherwise a 304 is returned.'
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.Version+xml
+                                    - application/vnd.ez.api.Version+json
+                        responses:
+                            401:
+                                description: 'If the user is not authorized to read this object'
+                            404:
+                                description: 'If the ID or version is not found'
+                            304:
+                                description: 'If the etag does not match the current one'
                     patch:
                         description: 'A specific draft is updated.'
+                        headers:
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.Version+xml
+                                    - application/vnd.ez.api.Version+json
+                            if-match:
+                                description: 'Causes to patch only if the specified etag is the current one'
+                            content-type:
+                                enum:
+                                    - application/vnd.ez.api.VersionUpdate+json
+                                    - application/vnd.ez.api.VersionUpdate+xml
+                        responses:
+                            400:
+                                description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                            401:
+                                description: 'If the user is not authorized to update this version'
+                            403:
+                                description: 'If the version is not allowed to change - i.e is not a DRAFT'
+                            404:
+                                description: 'If the content id or version id does not exist'
+                            412:
+                                description: 'If the current ETag does not match with the provided one in the If-Match header'
                 /<no>:
                     post:
                         description: 'The system creates a new draft version as a copy from the given version'
+                        headers:
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.Version+xml
+                                    - application/vnd.ez.api.Version+json
+                        responses:
+                            401:
+                                description: 'If the user is not authorized to update this object'
+                            404:
+                                description: 'If the content object was not found'
                     /relations:
                         get:
                             description: 'loads the relations of the given version'
+                            headers:
+                                accept:
+                                    enum: [application/vnd.ez.api.RelationList+xml, application/vnd.ez.api.RelationList+json]
+                            responses:
+                                401:
+                                    description: 'If the user is not authorized to read this object'
+                                404:
+                                    description: 'If the content object was not found'
                         /<ID>:
                             get:
                                 description: 'loads a relation for the given content object'
+                                headers:
+                                    accept: { enum: [application/vnd.ez.api.Relation+xml, application/vnd.ez.api.Relation+json] }
+                                responses:
+                                    404: { description: 'If the object with the given id or the relation does not exist' }
+                                    401: { description: 'If the user is not authorized to read this object' }
                         post:
                             description: 'Creates a new relation of type COMMON for the given draft.'
+                            headers:
+                                accept:
+                                    enum: [application/vnd.ez.api.Relation+xml, application/vnd.ez.api.Relation+json]
+                                content-type:
+                                    enum: [application/vnd.ez.api.RelationCreate+xml, application/vnd.ez.api.RelationCreate+json]
+                            responses:
+                                401:
+                                    description: 'If the user is not authorized to update this content object'
+                                403:
+                                    description: 'If a relation to the destId already exists or the destId does not exist or the version is not a draft.'
+                                404:
+                                    description: 'If the object or version with the given id does not exist'
             /currentversion:
                 post:
                     description: 'The system creates a new draft version as a copy from the current version'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.Version+xml
+                                - application/vnd.ez.api.Version+json
+                    responses:
+                        401:
+                            description: 'If the user is not authorized to update this object'
+                        403:
+                            description: 'If the current version is already a draft'
+                        404:
+                            description: 'If the content object was not found'
             /locations:
                 post:
                     description: 'Creates a new location for the given content object'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.Location+xml
+                                - application/vnd.ez.api.Location+json
+                        content-type:
+                            enum:
+                                - application/vnd.ez.api.LocationCreate+json
+                                - application/vnd.ez.api.LocationCreate+xml
+                    responses:
+                        400:
+                            description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                        401:
+                            description: 'If the user is not authorized to create this location'
+                        403:
+                            description: 'If a location under the given parent id already exists'
                 get:
                     description: 'loads all locations for the given content object'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.LocationList+xml
+                                - application/vnd.ez.api.LocationList+json
+                        if-none-match:
+                            description: '<etag>'
+                    responses:
+                        404:
+                            description: 'If the object with the given id does not exist'
+                        401:
+                            description: 'If the user is not authorized to read this object'
             /objectstates:
                 get:
                     description: 'Returns the object states of content'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ContentObjectStates+xml
+                                - application/vnd.ez.api.ContentObjectStates+json
+                        if-none-match:
+                            description: '<etag>'
+                    responses: {  }
                 patch:
                     description: 'Updates object states of content. An object state in the input overrides the state of the object state group.'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ContentObjectStates+xml
+                                - application/vnd.ez.api.ContentObjectStates+json
+                        content-type:
+                            enum:
+                                - application/vnd.ez.api.ContentObjectStates+json
+                                - application/vnd.ez.api.ContentObjectStates+xml
+                        if-match:
+                            description: '<etag>'
+                    responses: {  }
     /binary:
         /images:
             /<imageId>:
@@ -98,206 +253,1066 @@
                     /<variationIdentifier>:
                         get:
                             description: 'Loads an image variation'
+                            headers:
+                                accept:
+                                    enum: [application/vnd.ez.api.ImageVariation+xml, application/vnd.ez.api.ImageVariation+json]
+                                content-type:
+                                    enum: [application/vnd.ez.api.ImageVariation+xml, application/vnd.ez.api.ImageVariation+json]
+                            responses:
+                                404:
+                                    description: 'if variationIdentifier doesn''t match any known variation'
+                                401:
+                                    description: 'If the user is not authorized to read this object'
     /locations:
         get:
             description: 'loads the location for a given id (x)or remote id'
+            headers: {  }
+            responses:
+                404:
+                    description: 'If the location with the given id (remoteId) does not exist'
         /<path>:
             get:
                 description: 'loads the location for the given path'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.Location+xml
+                            - application/vnd.ez.api.Location+json
+                    if-none-match:
+                        description: '<etag>'
+                responses:
+                    404:
+                        description: 'If the location with the given path does not exist'
+                    401:
+                        description: 'If the user is not authorized to read this location'
             /children:
                 get:
                     description: 'loads all child locations for the given parent location'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.LocationList+xml
+                                - application/vnd.ez.api.LocationList+json
+                    responses:
+                        404:
+                            description: 'If the object with the given id does not exist'
+                        401:
+                            description: 'If the user is not authorized to read this object'
             post:
                 description: 'copies the subtree to another parent'
+                headers:
+                    destination:
+                        description: n/a
+                responses:
+                    404:
+                        description: 'If the location with the given id does not exist'
+                    401:
+                        description: 'If the user is not authorized to move this location'
             /urlaliases:
                 get:
                     description: 'Returns the list of url aliases for a location'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.UrlAliasRefList+xml
+                                - application/vnd.ez.api.UrlAliasRefList+json
+                    responses:
+                        401:
+                            description: 'If the location was not found'
         /<ID>:
             patch:
                 description: 'updates the location, this method can also be used to hide/unhide a location via the hidden field in the LocationUpdate'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.Location+xml
+                            - application/vnd.ez.api.Location+json
+                    content-type:
+                        enum:
+                            - application/vnd.ez.api.LocationUpdate+json
+                            - application/vnd.ez.api.LocationUpdate+xml
+                    if-match:
+                        description: '<etag>'
+                responses:
+                    404:
+                        description: 'If the location with the given id does not exist'
+                    401:
+                        description: 'If the user is not authorized to update this location'
             post:
                 description: 'Swaps the content of the location with the content of the given location'
+                headers:
+                    destination:
+                        description: n/a
+                responses:
+                    404:
+                        description: 'If the location with the given id does not exist'
+                    401:
+                        description: 'If the user is not authorized to swap this location'
     /views:
         post:
             description: 'executes a query and returns view including the results The View input reflects the criteria model of the public API.'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.View+xml
+                        - application/vnd.ez.api.View+json
+                content-type:
+                    enum:
+                        - application/vnd.ez.api.ViewInput+xml
+                        - application/vnd.ez.api.ViewInput+json
+            responses: {  }
         get:
             description: 'Returns a list of view uris. The list includes public view and private view of the authenticated user.'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.RefList+xml
+                        - application/vnd.ez.api.RefList+json
+            responses: {  }
         /<identifier>:
             get:
                 description: 'Returns the view'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.View+xml
+                            - application/vnd.ez.api.View+json
+                responses:
+                    401:
+                        description: 'if the view is not public and from another user'
             /results:
                 get:
                     description: 'Returns result of the view'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ViewResult+xml
+                                - application/vnd.ez.api.ViewResult+json
+                    responses:
+                        401:
+                            description: 'if the view is not public and from another user'
     /sections:
         post:
             description: 'Creates a new section'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.Section+xml
+                        - application/vnd.ez.api.Section+json
+                content-type:
+                    enum:
+                        - application/vnd.ez.api.SectionInput+json
+                        - application/vnd.ez.api.SectionInput+xml
+            responses:
+                400:
+                    description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                401:
+                    description: 'If the user is not authorized to create this section'
+                403:
+                    description: 'If a section with same identifier already exists'
         get:
             description: 'Returns a list of all sections'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.SectionList+xml
+                        - application/vnd.ez.api.SectionList+json
+                if-none-match:
+                    description: '<etag>'
+            responses:
+                401:
+                    description: 'If the user has no permission to read the sections'
         /<ID>:
             get:
                 description: 'Returns the section given by id'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.Section+xml
+                            - application/vnd.ez.api.Section+json
+                    if-none-match:
+                        description: '<etag>'
+                responses: {  }
             patch:
                 description: 'Updates a section'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.Section+xml
+                            - application/vnd.ez.api.Section+json
+                    content-type:
+                        enum:
+                            - application/vnd.ez.api.SectionInput+json
+                            - application/vnd.ez.api.SectionInput+xml
+                    if-match:
+                        description: '<etag>'
+                responses: {  }
             delete:
                 description: 'the given section is deleted'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.ErrorMessage+xml
+                            - application/vnd.ez.api.ErrorMessage+json
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete this section'
+                    404:
+                        description: 'If the section does not exist'
     /trash:
         get:
             description: 'Returns a list of all trash items'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.Trash+xml
+                        - application/vnd.ez.api.Trash+json
+            responses: {  }
         /<ID>:
             get:
                 description: 'Returns the trash item given by id'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.TrashItem+xml
+                            - application/vnd.ez.api.TrashItem+json
+                responses:
+                    401:
+                        description: 'If the user has no permission to read the trash item'
+                    404:
+                        description: 'If the trash item with the given id does not exist'
             post:
                 description: 'Restores a trashItem'
+                headers:
+                    destination:
+                        description: n/a
+                responses:
+                    401:
+                        description: 'If the user is not authorized to restore this trash item'
+                    403:
+                        description: 'if the given parent location does not exist'
+                    404:
+                        description: 'if the given trash item does not exist'
     /objectstategroups:
         post:
             description: 'Creates a new objectstategroup'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.ObjectStateGroup+xml
+                        - application/vnd.ez.api.ObjectStateGroup+json
+                content-type:
+                    enum:
+                        - application/vnd.ez.api.ObjectStateGroupCreate+json
+                        - application/vnd.ez.api.ObjectStateGroupCreate+xml
+            responses:
+                400:
+                    description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                401:
+                    description: 'If the user is not authorized to create an object state group'
+                403:
+                    description: 'If a object state group with same identifier already exists'
         get:
             description: 'Returns a list of all object state groups'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.ObjectStateGroupList+xml
+                        - application/vnd.ez.api.ObjectStateGroupList+json
+                if-none-match:
+                    description: '<etag>'
+            responses:
+                401:
+                    description: 'If the user has no permission to read object state groups'
         /<ID>:
             get:
                 description: 'Returns the object state group given by id'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.ObjectStateGroup+xml
+                            - application/vnd.ez.api.ObjectStateGroup+json
+                    if-none-match:
+                        description: '<etag>'
+                responses: {  }
             patch:
                 description: 'Updates an object state group'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.ObjectStateGroup+xml
+                            - application/vnd.ez.api.ObjectStateGroup+json
+                    content-type:
+                        enum:
+                            - application/vnd.ez.api.ObjectStateGroupUpdate+json
+                            - application/vnd.ez.api.ObjectStateGroupUpdate+xml
+                    if-match:
+                        description: '<etag>'
+                responses: {  }
             /objectstates:
                 post:
                     description: 'Creates a new objectstate'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ObjectState+xml
+                                - application/vnd.ez.api.ObjectState+json
+                        content-type:
+                            enum:
+                                - application/vnd.ez.api.ObjectStateGroupCreate+json
+                                - application/vnd.ez.api.ObjectStateGroupCreate+xml
+                    responses:
+                        400:
+                            description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                        401:
+                            description: 'If the user is not authorized to create an object state'
+                        403:
+                            description: 'If a object state with same identifier already exists in the given group'
                 get:
                     description: 'Returns a list of all object states of the given group'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ObjectStateList+xml
+                                - application/vnd.ez.api.ObjectStateList+json
+                        if-none-match:
+                            description: '<etag>'
+                    responses:
+                        401:
+                            description: 'If the user has no permission to read object states'
                 /<ID>:
                     get:
                         description: 'Returns the object state'
+                        headers:
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.ObjectState+xml
+                                    - application/vnd.ez.api.ObjectState+json
+                            if-none-match:
+                                description: '<etag>'
+                        responses: {  }
                     patch:
                         description: 'Updates an object state'
+                        headers:
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.ObjectState+xml
+                                    - application/vnd.ez.api.ObjectState+json
+                            content-type:
+                                enum:
+                                    - application/vnd.ez.api.ObjectStateUpdate+json
+                                    - application/vnd.ez.api.ObjectStateUpdate+xml
+                            if-match:
+                                description: '<etag>'
+                        responses: {  }
     /urlaliases:
         post:
             description: 'Creates a new url alias'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.UrlAlias+xml
+                        - application/vnd.ez.api.UrlAlias+json
+                content-type:
+                    enum:
+                        - application/vnd.ez.api.UrlAliasCreate+json
+                        - application/vnd.ez.api.UrlAliasCreate+xml
+            responses:
+                400:
+                    description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                401:
+                    description: 'If the user is not authorized to create an url alias'
+                403:
+                    description: 'If an url alias same identifier already exists'
         get:
             description: 'Returns the list of url global aliases'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.UrlAliasRefList+xml
+                        - application/vnd.ez.api.UrlAliasRefList+json
+            responses:
+                401:
+                    description: 'If the user has no permission to read urlaliases'
         /<ID>:
             get:
                 description: 'Returns the urlalias with the given id'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.UrlAlias+xml
+                            - application/vnd.ez.api.UrlAlias+json
+                responses: {  }
     /urlwildcards:
         post:
             description: 'Creates a new url wildcard'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.UrlWildcard+xml
+                        - application/vnd.ez.api.UrlWildcard+json
+                content-type:
+                    enum:
+                        - application/vnd.ez.api.UrlWildcardCreate+json
+                        - application/vnd.ez.api.UrlWildcardCreate+xml
+            responses:
+                400:
+                    description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                401:
+                    description: 'If the user is not authorized to create an url wildcard'
+                403:
+                    description: 'If an url wildcardsame identifier already exists'
         get:
             description: 'Returns a list of url wildcards'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.UrlWildcardList+xml
+                        - application/vnd.ez.api.UrlWildcardList+json
+            responses:
+                401:
+                    description: 'If the user has no permission to read urlwildcards'
         /<ID>:
             get:
                 description: 'Returns the urlwildcard with the given id'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.UrlWildcard+xml
+                            - application/vnd.ez.api.UrlWildcard+json
+                responses: {  }
     /typegroups:
         post:
             description: 'Creates a new content type group'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.ContentTypeGroup+xml
+                        - application/vnd.ez.api.ContentTypeGroup+json
+                content-type:
+                    enum:
+                        - application/vnd.ez.api.ContentTypeGroupInput+json
+                        - application/vnd.ez.api.ContentTypeGroupInput+xml
+            responses:
+                400:
+                    description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                401:
+                    description: 'If the user is not authorized to create this content type group'
+                403:
+                    description: 'If a content type group with same identifier already exists'
         get:
             description: 'loads the content type group for a given identifier'
+            headers: {  }
+            responses:
+                404:
+                    description: 'If the content type group with the given identifier does not exist'
         /<ID>:
             get:
                 description: 'Returns the content type given by id'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.ContentTypeGroup+xml
+                            - application/vnd.ez.api.ContentTypeGroup+json
+                    if-none-match:
+                        description: '<etag>'
+                responses: {  }
             patch:
                 description: 'Updates a content type group'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.ContentTypeGroup+xml
+                            - application/vnd.ez.api.ContentTypeGroup+json
+                    content-type:
+                        enum:
+                            - application/vnd.ez.api.ContentTypeGroupInput+json
+                            - application/vnd.ez.api.ContentTypeGroupInput+xml
+                    if-match:
+                        description: '<etag> Causes to patch only if the specified etag is the current one. Otherwise a 412 is returned.'
+                responses:
+                    400:
+                        description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                    401:
+                        description: 'If the user is not authorized to create this content type group'
+                    403:
+                        description: 'If a content type group with the given identifier already exists'
+                    412:
+                        description: 'If the current ETag does not match with the provided one in the If-Match header'
             /types:
                 get:
                     description: 'Returns a list of content types of the group'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ContentTypeInfoList+xml
+                                - application/vnd.ez.api.ContentTypeInfoList+json
+                                - application/vnd.ez.api.ContentTypeList+xml
+                                - application/vnd.ez.api.ContentTypeList+json
+                    responses:
+                        401:
+                            description: 'If the user has no permission to read the content types'
                 post:
                     description: 'Creates a new content type draft in the given content type group'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ContentType+xml
+                                - application/vnd.ez.api.ContentType+json
+                        content-type:
+                            enum:
+                                - application/vnd.ez.api.ContentTypeCreate+json
+                                - application/vnd.ez.api.ContentTypeCreate+xml
+                    responses:
+                        400:
+                            description: 'If the Input does not match the input schema definition, If validation on a field definition fails If validation of the content type fails, eg. multiple fields of a same singular field type are provided If publish = true and the input is not complete e.g. no field definitions are provided'
+                        401:
+                            description: 'If the user is not authorized to create this content type'
+                        403:
+                            description: 'If a content type with same identifier already exists'
     /types:
         get:
             description: 'Returns a list of content types'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.ContentTypeInfoList+xml
+                        - application/vnd.ez.api.ContentTypeInfoList+json
+                        - application/vnd.ez.api.ContentTypeList+xml
+                        - application/vnd.ez.api.ContentTypeList+json
+            responses:
+                401:
+                    description: 'If the user has no permission to read the content types'
         /<ID>:
             get:
                 description: 'Returns the content type given by id'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.ContentType+xml
+                            - application/vnd.ez.api.ContentType+json
+                    if-none-match:
+                        description: '<etag>'
+                responses: {  }
             post:
                 description: 'Creates a draft and updates it with the given data'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.ContentTypeInfo+xml
+                            - application/vnd.ez.api.ContentTypeInfo+json
+                    content-type:
+                        enum:
+                            - application/vnd.ez.api.ContentTypeUpdate+json
+                            - application/vnd.ez.api.ContentTypeUpdate+xml
+                responses:
+                    400:
+                        description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                    401:
+                        description: 'If the user is not authorized to create the draft'
+                    403:
+                        description: 'If a content type with the given new identifier already exists. If there exists already a draft.'
             /draft:
                 patch:
                     description: 'Updates meta data of a draft. This method does not handle field definitions'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ContentTypeInfo+xml
+                                - application/vnd.ez.api.ContentTypeInfo+json
+                        content-type:
+                            enum:
+                                - application/vnd.ez.api.ContentTypeUpdate+json
+                                - application/vnd.ez.api.ContentTypeUpdate+xml
+                    responses:
+                        400:
+                            description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                        401:
+                            description: 'If the user is not authorized to update the draft.'
+                        403:
+                            description: 'If a content type with the given new identifier already exists.'
+                        404:
+                            description: 'If there is no draft on this content type'
                 /fielddefinitions:
                     post:
                         description: 'Creates a new field definition for the given content type'
+                        headers:
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.FieldDefinition+xml
+                                    - application/vnd.ez.api.FieldDefinition+json
+                            content-type:
+                                enum:
+                                    - application/vnd.ez.api.FieldDefinitionCreate+json
+                                    - application/vnd.ez.api.FieldDefinitionCreate+xml
+                        responses:
+                            400:
+                                description: 'If the Input does not match the input schema definition or validation on the field definition fails, in this case the response contains an ErrorMessage'
+                            401:
+                                description: 'If the user is not authorized to add a field definition'
+                            403:
+                                description: 'If a field definition with same identifier already exists in the given content type If the field definition is of singular type, already existing in the given content type If the field definition of the type that can''t be added to a content type that already has content instances is being added to such content type'
                     /<ID>:
                         get:
                             description: 'Returns the field definition given by id'
+                            headers:
+                                accept:
+                                    enum: [application/vnd.ez.api.FieldDefinition+xml, application/vnd.ez.api.FieldDefinition+json]
+                            responses: {  }
                         put:
                             description: 'Updates the attributes of a field definitions'
+                            headers:
+                                accept:
+                                    enum: [application/vnd.ez.api.FieldDefinition+xml, application/vnd.ez.api.FieldDefinition+json]
+                                content-type:
+                                    enum: [application/vnd.ez.api.FieldDefinitionUpdate+json, application/vnd.ez.api.FieldDefinitionUpdate+xml]
+                            responses:
+                                400:
+                                    description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                                401:
+                                    description: 'If the user is not authorized to update the field definition'
+                                403:
+                                    description: 'If a field definition with the given new identifier already exists in the given content type.'
             /groups:
                 post:
                     description: 'links a content type group to the content type and returns the updated group list'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ContentTypeGroupRefList+xml
+                                - application/vnd.ez.api.ContentTypeGroupRefList+json
+                    responses:
+                        400:
+                            description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                        401:
+                            description: 'If the user is not authorized to add a group'
+                        403:
+                            description: 'If the content type is already assigned to the group'
     /type:
         /<ID>:
             /groups:
                 get:
                     description: 'Returns the content type groups the content type belongs to.'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.ContentTypeGroupRefList+xml
+                                - application/vnd.ez.api.ContentTypeGroupRefList+json
+                    responses: {  }
                 /<ID>:
                     delete:
                         description: 'removes the given group from the content type and returns the updated group list'
+                        headers:
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.ContentTypeGroupRefList+xml
+                                    - application/vnd.ez.api.ContentTypeGroupRefList+json
+                        responses:
+                            401:
+                                description: 'If the user is not authorized to delete this content type'
+                            403:
+                                description: 'If the given group is the last one'
+                            404:
+                                description: 'If the resource does not exist'
 /user:
     /groups:
         /<path>:
             get:
                 description: 'loads a user groups for the given <path>'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.UserGroup+xml
+                            - application/vnd.ez.api.UserGroup+json
+                    if-none-match:
+                        description: '<etag>'
+                responses:
+                    401:
+                        description: 'If the user has no permission to read user groups'
+                    404:
+                        description: 'If the user group does not exist'
             /subgroups:
                 post:
                     description: 'Creates a new user group under the given parent. To create a top level group use /user/groups/subgroups'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.UserGroup+xml
+                                - application/vnd.ez.api.UserGroup+json
+                        content-type:
+                            enum:
+                                - application/vnd.ez.api.UserGroupCreate+json
+                                - application/vnd.ez.api.UserGroupCreate+xml
+                    responses:
+                        400:
+                            description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                        401:
+                            description: 'If the user is not authorized to create this user group'
             patch:
                 description: 'Updates a user group'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.UserGroup+xml
+                            - application/vnd.ez.api.UserGroup+json
+                    content-type:
+                        enum:
+                            - application/vnd.ez.api.UserGroupUpdate+json
+                            - application/vnd.ez.api.UserGroupUpdate+xml
+                    if-match:
+                        description: '<etag> Causes to patch only if the specified etag is the current one. Otherwise a 412 is returned.'
+                responses:
+                    400:
+                        description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                    401:
+                        description: 'If the user is not authorized to update the user group'
+                    412:
+                        description: 'If the current ETag does not match with the provided one in the If-Match header'
             post:
                 description: 'moves the user group to another parent.'
+                headers:
+                    destination:
+                        description: n/a
+                responses:
+                    401:
+                        description: 'If the user is not authorized to update the user group'
+                    403:
+                        description: 'If the new parent does not exist'
+                    404:
+                        description: 'If the user group does not exist'
             /users:
                 post:
                     description: 'Creates a new user in the given group'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.User+xml
+                                - application/vnd.ez.api.User+json
+                        content-type:
+                            enum:
+                                - application/vnd.ez.api.UserCreate+json
+                                - application/vnd.ez.api.UserCreate+xml
+                    responses:
+                        400:
+                            description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                        401:
+                            description: 'If the user is not authorized to create this user'
+                        403:
+                            description: 'If a user with the same login already exists'
+                        404:
+                            description: 'If the group with the given ID does not exist'
         get:
             description: 'Load user groups for either an id or remoteId or role.'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.UserGroupList+xml
+                        - application/vnd.ez.api.UserGroupList+json
+                        - application/vnd.ez.api.UserGroupRefList+xml
+                        - application/vnd.ez.api.UserGroupRefList+json
+            responses:
+                401:
+                    description: 'If the user has no permission to read user groups'
         /<ID>:
             /users:
                 get:
                     description: 'loads the users of the group with the given <ID>'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.UserList+xml
+                                - application/vnd.ez.api.UserList+json
+                                - application/vnd.ez.api.UserRefList+xml
+                                - application/vnd.ez.api.UserRefList+json
+                    responses:
+                        401:
+                            description: 'If the user has no permission to read user groups'
+                        404:
+                            description: 'If the user group does not exist'
             /subgroups:
                 get:
                     description: 'Returns a list of the sub groups'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.UserGroupList+xml
+                                - application/vnd.ez.api.UserGroupList+json
+                                - application/vnd.ez.api.UserGroupRefList+xml
+                                - application/vnd.ez.api.UserGroupRefList+json
+                    responses:
+                        401:
+                            description: 'If the user has no permission to read user groups'
+                        404:
+                            description: 'If the user group does not exist'
     /users:
         get:
             description: 'Load users either for a given remoteId or role'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.UserList+xml
+                        - application/vnd.ez.api.UserList+json
+                        - application/vnd.ez.api.UserRefList+xml
+                        - application/vnd.ez.api.UserRefList+json
+            responses:
+                401:
+                    description: 'If the user has no permission to read users'
         /<ID>:
             get:
                 description: 'loads the users of the group with the given <ID>'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.User+xml
+                            - application/vnd.ez.api.User+json
+                    if-none-match:
+                        description: '<etag>'
+                responses:
+                    401:
+                        description: 'If the user has no permission to read users'
+                    404:
+                        description: 'If the user does not exist'
             patch:
                 description: 'Updates a user'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.User+xml
+                            - application/vnd.ez.api.User+json
+                    content-type:
+                        enum:
+                            - application/vnd.ez.api.UserUpdate+json
+                            - application/vnd.ez.api.UserUpdate+xml
+                    if-match:
+                        description: '<etag> Causes to patch only if the specified etag is the current one. Otherwise a 412 is returned.'
+                responses:
+                    400:
+                        description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                    401:
+                        description: 'If the user is not authorized to update the user'
+                    404:
+                        description: 'If the user does not exist'
+                    412:
+                        description: 'If the current ETag does not match with the provided one in the If-Match header'
             /groups:
                 get:
                     description: 'Returns a list of user groups the user belongs to. The returned list includes the resources for unassigning a user group if the user is in multiple groups.'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.UserGroupRefList+xml
+                                - application/vnd.ez.api.UserGroupRefList+json
+                    responses:
+                        401:
+                            description: 'If the user has no permission to read user groups'
+                        404:
+                            description: 'If the user does not exist'
                 post:
                     description: 'Assigns the user to a user group'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.UserGroupRefList+xml
+                                - application/vnd.ez.api.UserGroupRefList+json
+                    responses:
+                        401:
+                            description: 'If the user is not authorized to assign user groups'
+                        403:
+                            description: 'If the new user group does not exist If the user is already in this group'
+                        404:
+                            description: 'If the user does not exist'
                 /<ID>:
                     delete:
                         description: 'Unassigns the user from a user group'
+                        headers:
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.UserGroupRefList+xml
+                                    - application/vnd.ez.api.UserGroupRefList+json
+                        responses:
+                            401:
+                                description: 'If the user is not authorized to unassign user groups'
+                            403:
+                                description: 'If the user is not in the given group'
+                            404:
+                                description: 'If the user does not exist'
     /roles:
         post:
             description: 'Creates a new role'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.Role+xml
+                        - application/vnd.ez.api.Role+json
+                content-type:
+                    enum:
+                        - application/vnd.ez.api.RoleInput+json
+                        - application/vnd.ez.api.RoleInput+xml
+            responses:
+                400:
+                    description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                401:
+                    description: 'If the user is not authorized to create this role'
         get:
             description: 'Returns a list of all roles'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.RoleList+xml
+                        - application/vnd.ez.api.RoleList+json
+            responses:
+                401:
+                    description: 'If the user has no permission to read roles'
         /<ID>:
             get:
                 description: 'loads a role for the given <ID>'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.Role+xml
+                            - application/vnd.ez.api.Role+json
+                    if-none-match:
+                        description: '<etag>'
+                responses:
+                    401:
+                        description: 'If the user has no permission to read roles'
+                    404:
+                        description: 'If the role does not exist'
             patch:
                 description: 'Updates a role'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.Role+xml
+                            - application/vnd.ez.api.Role+json
+                    content-type:
+                        enum:
+                            - application/vnd.ez.api.RoleInput+json
+                            - application/vnd.ez.api.RoleInput+xml
+                    if-match:
+                        description: '<etag> Causes to patch only if the specified etag is the current one. Otherwise a 412 is returned.'
+                responses:
+                    400:
+                        description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
+                    401:
+                        description: 'If the user is not authorized to update the role'
+                    412:
+                        description: 'If the current ETag does not match with the provided one in the If-Match header'
             /policies:
                 get:
                     description: 'loads policies for the given role'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.PolicyList+xml
+                                - application/vnd.ez.api.PolicyList+json
+                    responses:
+                        401:
+                            description: 'If the user has no permission to read roles'
+                        404:
+                            description: 'If the role does not exist'
                 /<ID>:
                     get:
                         description: 'loads a policy for the given module and function'
+                        headers:
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.Policy+xml
+                                    - application/vnd.ez.api.Policy+json
+                            if-none-match:
+                                description: '<etag>'
+                        responses:
+                            401:
+                                description: 'If the user has no permission to read roles'
+                            404:
+                                description: 'If the role or policy does not exist'
                     patch:
                         description: 'updates a policy'
+                        headers:
+                            accept:
+                                enum:
+                                    - application/vnd.ez.api.Policy+xml
+                                    - application/vnd.ez.api.Policy+json
+                            content-type:
+                                enum:
+                                    - application/vnd.ez.api.PolicyUpdate+xml
+                                    - application/vnd.ez.api.PolicyUpdate+json
+                            if-match:
+                                description: '<etag> Causes to patch only if the specified etag is the current one. Otherwise a 412 is returned.'
+                        responses:
+                            400:
+                                description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage If validation of limitation in PolicyUpdate fails (see Policy)'
+                            401:
+                                description: 'If the user is not authorized to update the policy'
+                            404:
+                                description: 'If the role does not exist'
+                            412:
+                                description: 'If the current ETag does not match with the provided one in the If-Match header'
                 post:
                     description: 'creates a policy'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.Policy+xml
+                                - application/vnd.ez.api.Policy+json
+                        content-type:
+                            enum:
+                                - application/vnd.ez.api.PolicyCreate+xml
+                                - application/vnd.ez.api.PolicyCreate+json
+                    responses:
+                        400:
+                            description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage If validation of limitation in PolicyCreate fails (see Policy)'
+                        401:
+                            description: 'If the user is not authorized to create the policy'
+                        404:
+                            description: 'If the role does not exist'
     /policies:
         get:
             description: 'search all policies which are applied to a given user'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.PolicyList+xml
+                        - application/vnd.ez.api.PolicyList+json
+            responses:
+                401:
+                    description: 'If the user has no permission to read roles'
     /sessions:
         post:
             description: 'Performs a login for the user or check if session exists and returns the session and session cookie. The client will need to remember both session name/id and CSRF token as this is for security reasons not exposed via GET.'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.Session+xml
+                        - application/vnd.ez.api.Session+json
+                content-type:
+                    enum:
+                        - application/vnd.ez.api.SessionInput+xml
+                        - application/vnd.ez.api.SessionInput+json
+                cookie:
+                    description: '(only needed for session''s checking) <sessionName>=<sessionID>'
+                x-csrf-token:
+                    description: '(only needed for session''s checking) <csrfToken> The <csrfToken> needed on all unsafe http methods with session.'
+            responses: {  }
         /<sessionID>:
             /refresh:
                 post:
                     description: 'Give the session''s User information'
+                    headers:
+                        cookie:
+                            description: n/a
+                        x-csrf-token:
+                            description: n/a
+                    responses:
+                        404:
+                            description: 'If the session does not exist'
             delete:
                 description: 'The user session is removed i.e. the user is logged out.'
+                headers:
+                    cookie:
+                        description: n/a
+                    x-csrf-token:
+                        description: n/a
+                responses:
+                    404:
+                        description: 'If the session does not exist'
