@@ -23,7 +23,7 @@
             queryParameters:
                 remoteId:
                     description: 'the remote id of the content. If present the content with the given remote id is returned'
-        /<ID>:
+        '/{contentId}':
             get:
                 description: 'Loads the content object for the given id. Depending on the Accept header the current version is embedded (i.e the current published version or if not exists the draft of the authenticated user)'
                 headers:
@@ -143,7 +143,7 @@
                         queryParameters:
                             languages:
                                 description: '(comma separated list) restricts the output of translatable fields to the given languages'
-                /<no>:
+                '/{versionNo}':
                     post:
                         description: 'The system creates a new draft version as a copy from the given version'
                         headers:

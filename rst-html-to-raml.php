@@ -170,7 +170,12 @@ class Feature extends ElementBase
 
     function getResource()
     {
-        return $this->getTableRowContent( 'Resource:' );
+        $resource = $this->getTableRowContent( 'Resource:' );
+        $resource = str_replace( '/content/objects/<ID>', '/content/objects/{contentId}', $resource );
+        $resource = str_replace( '/versions/<no>', '/versions/{versionNo}', $resource );
+        $resource = str_replace( '/versions/<versionNo>', '/versions/{versionNo}', $resource );
+
+        return $resource;
     }
 
     function getDescription()
