@@ -1,4 +1,8 @@
 <?php
+use Symfony\Component\Yaml\Dumper;
+
+require 'vendor/autoload.php';
+
 $coveredBooks = ['content', 'content-types', 'user-management'];
 
 $doc = new DOMDocument();
@@ -18,23 +22,45 @@ foreach (getBooks( $xpath ) as $book) {
         if ( $feature->getResource() === 'n/a' ) {
             continue;
         }
-        $resourceParts = explode( '/', trim( $feature->getResource(), '/' ) );
-        $resourceLeaf = sprintf( "" );
-        eval(
-            $l = sprintf(
-                "\$resources['/%s'] = [ 'method' => \$feature->getMethod(), 'description' => '\$feature->getDescription()' ];",
-                implode( "']['/", $resourceParts )
-             )
-        );
+
+        addFeature( $resources, $feature );
     }
+
+    // break;
 }
 
-print_r( $resources );
+$dumper = new Dumper();
+
+$yaml = $dumper->dump($resources, 10);
+echo $yaml;
+
+// print_r( $resources );
+
+function addFeature( &$resources, Feature $feature )
+{
+    $resourceParts = explode( '/', trim( $feature->getResource(), '/' ) );
+    $resourceParts = array_map(
+        function( $value ) { return "['/$value']"; },
+        $resourceParts
+    );
+    $method = $feature->getMethod();
+    $description = $feature->getDescription();
+    $resourceProperties = [ $feature->getMethod() => ['description' => $feature->getDescription()] ];
+
+    $leafVariable = '$resources' . implode( $resourceParts ) . "['$method']";
+
+    eval( <<< EVAL
+$leafVariable = ['description' => \$description ];
+EVAL
+);
+
+}
 
 /**
  * @return Book[]
  */
 function getBooks( DOMXPath $xpath )
+
 {
     $books = [];
     foreach ( $xpath->query( "//div[@class='section' and h1]" ) as $bookNode )
@@ -129,11 +155,14 @@ class Feature extends ElementBase
         if ( strpos( $method, 'PATCH or POST' ) !== false ) {
             return 'patch';
         } else if ( strpos( $method, 'MOVE or POST' ) !== false ) {
-            return 'move';
+            // return 'move';
+            return 'post';
         } else if ( strpos( $method, 'COPY or POST' ) !== false ) {
-            return 'copy';
+            // return 'copy';
+            return 'post';
         } else if ( strpos( $method, 'SWAP or POST' ) !== false ) {
-            return 'swap';
+            // return 'swap';
+            return 'post';
         } else {
             return strtolower( $method );
         }

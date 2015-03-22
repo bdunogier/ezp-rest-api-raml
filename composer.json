@@ -1,0 +1,15 @@
+{
+    "name": "bdunogier/ezp-rest-api-raml",
+    "description": "A generator of RAML file based on the eZ Platform REST API RestructuredText spec",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "Bertrand Dunogier",
+            "email": "bertrand.dunogier@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "symfony/yaml": "~2.6"
+    }
+}

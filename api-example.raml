@@ -1,0 +1,89 @@
+#%RAML 0.8
+title: eZ Platform Content Repository
+version: v2
+
+baseUri: http://server/api/ezp/{version}/content
+protocols: [HTTP, HTTPS]
+mediaType: application/xml
+
+/content:
+  /objects:
+    get:
+      queryParameters:
+        remoteId:
+          description: The Remote Id of a Content
+          required: true
+      responses:
+        307:
+          description: A link to the Content's ressource.
+        404:
+          description: No Content with this remote ID was found.
+    post:
+      description: |
+        Creates a new content draft assigned to the authenticated user. If a different userId is given in the input it is assigned to the given user but this required special rights for the authenticated user (this is useful for content staging where the transfer process does not have to authenticate with the user which created the content object in the source server). The user has to publish the content if it should be visible.
+      headers:
+        accept:
+          enum:
+            - application/vnd.ez.api.ContentInfo+xml
+            - application/vnd.ez.api.ContentInfo+json
+            - application/vnd.ez.api.Content+xml
+            - application/vnd.ez.api.Content+json
+        content-type:
+          enum: [application/vnd.ez.api.ContentCreate+json, application/vnd.ez.api.ContentCreate+xml]
+      responses:
+        201:
+        400:
+          description: If the Input does not match the input schema definition or the validation on a field fails
+        401:
+          description: If the user is not authorized to create this object in this location
+        404:
+          description: If a parent location in specified in the request body (see ContentCreate) and it does not exist
+
+      body:
+        application/vnd.ez.api.ContentCreate+json:
+        application/vnd.ez.api.ContentCreate+xml:
+    /{contentId}:
+      get:
+        description: |
+          Loads the content object for the given id.
+          Depending on the Accept header, the current version can be embedded.
+        headers:
+          accept:
+            default: application/vnd.ez.api.ContentInfo+xml
+            description: |
+              `application/vnd.ez.api.ContentInfo` will return a ContentInfo, e.g. Content Metadata,
+              while `application/vnd.ez.api.Content` will return Content with a Version as well as Fields. The Version will be either the Published One, if any, or the current User's Draft Version, if any.
+            enum:
+              - application/vnd.ez.api.ContentInfo+xml
+              - application/vnd.ez.api.ContentInfo+json
+              - application/vnd.ez.api.Content+xml
+              - application/vnd.ez.api.Content+json
+        queryParameters:
+          languages:
+            required: false
+            description: A comma separated list of locales to return in the Version
+            example: fre-FR,eng-GB
+        responses:
+          200:
+            body:
+              application/vnd.ez.api.ContentInfo+xml:
+              application/vnd.ez.api.ContentInfo+json:
+              application/vnd.ez.api.Content+xml:
+              application/vnd.ez.api.Content+json:
+          404:
+            description: No content found with this id
+          401:
+            description: The User is not authorized to view this Content
+
+      patch:
+        description:
+        headers:
+        responses:
+          201:
+          401:
+          404:
+      delete:
+
+schemas: []
+  #- application/vnd.ez.api.Content+xml: !!null
+  #- application/vnd.ez.api.Content+xml: !include http://raw.githubusercontent.com/ezsystems/ezpublish-kernel/master/doc/specifications/rest/xsd/Content.xsd

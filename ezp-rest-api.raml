@@ -1,0 +1,257 @@
+/content:
+    /objects:
+        post:
+            description: 'Creates a new content draft assigned to the authenticated user. If a different userId is given in the input it is assigned to the given user but this required special rights for the authenticated user (this is useful for content staging where the transfer process does not have to authenticate with the user which created the content object in the source server). The user has to publish the content if it should be visible.'
+        get:
+            description: 'loads the content for a given remote id'
+        /<ID>:
+            get:
+                description: 'Loads the content object for the given id. Depending on the Accept header the current version is embedded (i.e the current published version or if not exists the draft of the authenticated user)'
+            patch:
+                description: 'this method updates the content metadata which is independent from a version.'
+            delete:
+                description: 'The content is deleted. If the content has locations (which is required in 4.x) on delete all locations assigned the content object are deleted via delete subtree.'
+            post:
+                description: 'Creates a new content object as copy under the given parent location given in the destination header.'
+            /versions:
+                get:
+                    description: 'Returns a list of all versions of the content. This method does not include fields and relations in the Version elements of the response.'
+                /<versionNo>:
+                    get:
+                        description: 'Loads a specific version of a content object. This method returns fields and relations'
+                    patch:
+                        description: 'A specific draft is updated.'
+                /<no>:
+                    post:
+                        description: 'The system creates a new draft version as a copy from the given version'
+                    /relations:
+                        get:
+                            description: 'loads the relations of the given version'
+                        /<ID>:
+                            get:
+                                description: 'loads a relation for the given content object'
+                        post:
+                            description: 'Creates a new relation of type COMMON for the given draft.'
+            /currentversion:
+                post:
+                    description: 'The system creates a new draft version as a copy from the current version'
+            /locations:
+                post:
+                    description: 'Creates a new location for the given content object'
+                get:
+                    description: 'loads all locations for the given content object'
+            /objectstates:
+                get:
+                    description: 'Returns the object states of content'
+                patch:
+                    description: 'Updates object states of content. An object state in the input overrides the state of the object state group.'
+    /binary:
+        /images:
+            /<imageId>:
+                /variations:
+                    /<variationIdentifier>:
+                        get:
+                            description: 'Loads an image variation'
+    /locations:
+        get:
+            description: 'loads the location for a given id (x)or remote id'
+        /<path>:
+            get:
+                description: 'loads the location for the given path'
+            /children:
+                get:
+                    description: 'loads all child locations for the given parent location'
+            post:
+                description: 'copies the subtree to another parent'
+            /urlaliases:
+                get:
+                    description: 'Returns the list of url aliases for a location'
+        /<ID>:
+            patch:
+                description: 'updates the location, this method can also be used to hide/unhide a location via the hidden field in the LocationUpdate'
+            post:
+                description: 'Swaps the content of the location with the content of the given location'
+    /views:
+        post:
+            description: 'executes a query and returns view including the results The View input reflects the criteria model of the public API.'
+        get:
+            description: 'Returns a list of view uris. The list includes public view and private view of the authenticated user.'
+        /<identifier>:
+            get:
+                description: 'Returns the view'
+            /results:
+                get:
+                    description: 'Returns result of the view'
+    /sections:
+        post:
+            description: 'Creates a new section'
+        get:
+            description: 'Returns a list of all sections'
+        /<ID>:
+            get:
+                description: 'Returns the section given by id'
+            patch:
+                description: 'Updates a section'
+            delete:
+                description: 'the given section is deleted'
+    /trash:
+        get:
+            description: 'Returns a list of all trash items'
+        /<ID>:
+            get:
+                description: 'Returns the trash item given by id'
+            post:
+                description: 'Restores a trashItem'
+    /objectstategroups:
+        post:
+            description: 'Creates a new objectstategroup'
+        get:
+            description: 'Returns a list of all object state groups'
+        /<ID>:
+            get:
+                description: 'Returns the object state group given by id'
+            patch:
+                description: 'Updates an object state group'
+            /objectstates:
+                post:
+                    description: 'Creates a new objectstate'
+                get:
+                    description: 'Returns a list of all object states of the given group'
+                /<ID>:
+                    get:
+                        description: 'Returns the object state'
+                    patch:
+                        description: 'Updates an object state'
+    /urlaliases:
+        post:
+            description: 'Creates a new url alias'
+        get:
+            description: 'Returns the list of url global aliases'
+        /<ID>:
+            get:
+                description: 'Returns the urlalias with the given id'
+    /urlwildcards:
+        post:
+            description: 'Creates a new url wildcard'
+        get:
+            description: 'Returns a list of url wildcards'
+        /<ID>:
+            get:
+                description: 'Returns the urlwildcard with the given id'
+    /typegroups:
+        post:
+            description: 'Creates a new content type group'
+        get:
+            description: 'loads the content type group for a given identifier'
+        /<ID>:
+            get:
+                description: 'Returns the content type given by id'
+            patch:
+                description: 'Updates a content type group'
+            /types:
+                get:
+                    description: 'Returns a list of content types of the group'
+                post:
+                    description: 'Creates a new content type draft in the given content type group'
+    /types:
+        get:
+            description: 'Returns a list of content types'
+        /<ID>:
+            get:
+                description: 'Returns the content type given by id'
+            post:
+                description: 'Creates a draft and updates it with the given data'
+            /draft:
+                patch:
+                    description: 'Updates meta data of a draft. This method does not handle field definitions'
+                /fielddefinitions:
+                    post:
+                        description: 'Creates a new field definition for the given content type'
+                    /<ID>:
+                        get:
+                            description: 'Returns the field definition given by id'
+                        put:
+                            description: 'Updates the attributes of a field definitions'
+            /groups:
+                post:
+                    description: 'links a content type group to the content type and returns the updated group list'
+    /type:
+        /<ID>:
+            /groups:
+                get:
+                    description: 'Returns the content type groups the content type belongs to.'
+                /<ID>:
+                    delete:
+                        description: 'removes the given group from the content type and returns the updated group list'
+/user:
+    /groups:
+        /<path>:
+            get:
+                description: 'loads a user groups for the given <path>'
+            /subgroups:
+                post:
+                    description: 'Creates a new user group under the given parent. To create a top level group use /user/groups/subgroups'
+            patch:
+                description: 'Updates a user group'
+            post:
+                description: 'moves the user group to another parent.'
+            /users:
+                post:
+                    description: 'Creates a new user in the given group'
+        get:
+            description: 'Load user groups for either an id or remoteId or role.'
+        /<ID>:
+            /users:
+                get:
+                    description: 'loads the users of the group with the given <ID>'
+            /subgroups:
+                get:
+                    description: 'Returns a list of the sub groups'
+    /users:
+        get:
+            description: 'Load users either for a given remoteId or role'
+        /<ID>:
+            get:
+                description: 'loads the users of the group with the given <ID>'
+            patch:
+                description: 'Updates a user'
+            /groups:
+                get:
+                    description: 'Returns a list of user groups the user belongs to. The returned list includes the resources for unassigning a user group if the user is in multiple groups.'
+                post:
+                    description: 'Assigns the user to a user group'
+                /<ID>:
+                    delete:
+                        description: 'Unassigns the user from a user group'
+    /roles:
+        post:
+            description: 'Creates a new role'
+        get:
+            description: 'Returns a list of all roles'
+        /<ID>:
+            get:
+                description: 'loads a role for the given <ID>'
+            patch:
+                description: 'Updates a role'
+            /policies:
+                get:
+                    description: 'loads policies for the given role'
+                /<ID>:
+                    get:
+                        description: 'loads a policy for the given module and function'
+                    patch:
+                        description: 'updates a policy'
+                post:
+                    description: 'creates a policy'
+    /policies:
+        get:
+            description: 'search all policies which are applied to a given user'
+    /sessions:
+        post:
+            description: 'Performs a login for the user or check if session exists and returns the session and session cookie. The client will need to remember both session name/id and CSRF token as this is for security reasons not exposed via GET.'
+        /<sessionID>:
+            /refresh:
+                post:
+                    description: 'Give the session''s User information'
+            delete:
+                description: 'The user session is removed i.e. the user is logged out.'
