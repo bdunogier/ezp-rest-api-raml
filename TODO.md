@@ -1,0 +1,1 @@
+- [ ] Descriptions longer than X => markdown (how ? indentation ? fuck ? make it on one line, then manual

@@ -4,15 +4,61 @@
             description: 'Creates a new content draft assigned to the authenticated user. If a different userId is given in the input it is assigned to the given user but this required special rights for the authenticated user (this is useful for content staging where the transfer process does not have to authenticate with the user which created the content object in the source server). The user has to publish the content if it should be visible.'
         get:
             description: 'loads the content for a given remote id'
-        /<ID>:
+        /{contentId}:
             get:
-                description: 'Loads the content object for the given id. Depending on the Accept header the current version is embedded (i.e the current published version or if not exists the draft of the authenticated user)'
+                description: |
+                    Loads the content object for the given id.
+                    Depending on the Accept header, the current version can be embedded.
+                headers:
+                    accept:
+                        default: application/vnd.ez.api.ContentInfo+xml
+                        description: |
+                            `application/vnd.ez.api.ContentInfo` will return a ContentInfo, e.g. Content Metadata,
+                            while `application/vnd.ez.api.Content` will return Content with a Version as well as Fields. The Version will be either the Published One, if any, or the current User's Draft Version, if any.
+                        enum:
+                            - application/vnd.ez.api.ContentInfo+xml
+                            - application/vnd.ez.api.ContentInfo+json
+                            - application/vnd.ez.api.Content+xml
+                            - application/vnd.ez.api.Content+json
+                queryParameters:
+                    languages:
+                        required: false
+                        description: A comma separated list of locales to return in the Version
+                        example: fre-FR,eng-GB
+                responses:
+                    200:
+                        body:
+                            application/vnd.ez.api.ContentInfo+xml:
+                            application/vnd.ez.api.ContentInfo+json:
+                            application/vnd.ez.api.Content+xml:
+                            application/vnd.ez.api.Content+json:
+                    404:
+                        description: No content found with this id
+                    401:
+                        description: The User is not authorized to view this Content
             patch:
                 description: 'this method updates the content metadata which is independent from a version.'
             delete:
                 description: 'The content is deleted. If the content has locations (which is required in 4.x) on delete all locations assigned the content object are deleted via delete subtree.'
             post:
                 description: 'Creates a new content object as copy under the given parent location given in the destination header.'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.ContentInfo+xml
+                            - application/vnd.ez.api.ContentInfo+json
+                            - application/vnd.ez.api.Content+xml
+                            - application/vnd.ez.api.Content+json
+                    content-type:
+                        enum: [application/vnd.ez.api.ContentCreate+json, application/vnd.ez.api.ContentCreate+xml]
+                responses:
+                    201:
+                    400:
+                        description: If the Input does not match the input schema definition or the validation on a field fails
+                    401:
+                        description: If the user is not authorized to create this object in this location
+                    404:
+                        description: If a parent location in specified in the request body (see ContentCreate) and it does not exist
             /versions:
                 get:
                     description: 'Returns a list of all versions of the content. This method does not include fields and relations in the Version elements of the response.'

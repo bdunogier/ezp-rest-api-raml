@@ -44,23 +44,20 @@ function addFeature( &$resources, Feature $feature )
         $resourceParts
     );
     $method = $feature->getMethod();
-    $description = $feature->getDescription();
-    $resourceProperties = [ $feature->getMethod() => ['description' => $feature->getDescription()] ];
+    $resourceProperties = ['description' => $feature->getDescription()];
+    foreach ( $feature->getHeaders() as $headerName => $properties ) {
+        $resourceProperties['headers'][$headerName] = $properties;
+    }
 
     $leafVariable = '$resources' . implode( $resourceParts ) . "['$method']";
 
-    eval( <<< EVAL
-$leafVariable = ['description' => \$description ];
-EVAL
-);
-
+    eval( "$leafVariable = \$resourceProperties;" );
 }
 
 /**
  * @return Book[]
  */
 function getBooks( DOMXPath $xpath )
-
 {
     $books = [];
     foreach ( $xpath->query( "//div[@class='section' and h1]" ) as $bookNode )
@@ -175,11 +172,48 @@ class Feature extends ElementBase
 
     function getDescription()
     {
-        $description = $this->getTableRowContent( 'Description:' );
-        $description = preg_replace( "/(\r\n|\r|\n)/", "", $description );
-        $description = preg_replace( "/\s{2,}/m", " ", $description );
+        return $this->getTableRowContent( 'Description:' );
+    }
 
-        return $description;
+    /**
+     * @return array
+     */
+    function getHeaders()
+    {
+        $headers = [];
+        $xpathQuery = sprintf(
+            "//div[@id='%s']/table//tr[th/text()='Headers:']/td/table/tbody/tr",
+            $this->getId()
+        );
+
+        foreach ( $this->xpathQuery( $xpathQuery ) as $headerNode )
+        {
+            $headerProperties = [];
+
+            $headerName = strtolower( trim( $this->xpathNodeValue( $this->xpath->query( './/th', $headerNode ) ), " :\t\n\r\0\x0B" ) );
+            $headerTableNodes = $this->xpath->query( ".//table//tr/th", $headerNode );
+
+            // si tr/td/table => liste de valeurs
+            //   tr/td/table/tr/th => valeurs des en-têtes
+            //   tr/td/table/tr/td => description des en-têtes
+            if ( $headerTableNodes->length > 0 )
+            {
+                $headerValuesNodeList = $this->xpath->query( ".//tr/th", $headerNode );
+
+                $headerProperties['enum'] = [];
+                foreach ( $headerValuesNodeList as $headerValueNode ) {
+                    $headerProperties['enum'][] = trim( $headerValueNode->nodeValue, " :\t\n\r\0\x0B" );
+                }
+            }
+            //   tr/td/text() => description de l'en-têtes
+            else
+            {
+                $headerProperties['description'] = trim( $this->xpathNodeValue( $this->xpath->query('.//td/p', $headerNode ) ), " :\t\n\r\0\x0B" );
+            }
+
+            $headers[$headerName] = $headerProperties;
+        }
+        return $headers;
     }
 }
 
@@ -219,19 +253,36 @@ abstract class ElementBase
     protected function xpathNodeValue( DOMNodeList $nodeList )
     {
         if ( $nodeList->length > 0 ) {
-            return trim( (string)$nodeList->item(0)->nodeValue );
+            return $this->cleanupTextNodeValue( (string)$nodeList->item(0)->nodeValue );
         } else {
             return 'n/a';
         }
     }
 
+    protected function cleanupTextNodeValue( $text)
+    {
+        $text = trim( $text, " :\t\n\r\0\x0B" );
+        $text = preg_replace( "/(\r\n|\r|\n)/", "", $text );
+        $text = preg_replace( "/\s{2,}/m", " ", $text );
+        return $text;
+    }
+
+
     protected function xpathQuery( $xpathQuery )
     {
-        return $this->xpath->query( $xpathQuery );
+        return $this->xpath->query( $xpathQuery, $this->node );
     }
 
     protected function getNode()
     {
         return $this->node;
+    }
+}
+
+class Headers extends ElementBase
+{
+    protected function getId()
+    {
+        // TODO: Implement getId() method.
     }
 }
