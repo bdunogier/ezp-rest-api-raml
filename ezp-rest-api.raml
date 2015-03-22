@@ -20,6 +20,9 @@
             responses:
                 404:
                     description: 'If the content with the given remote id does not exist'
+            queryParameters:
+                remoteId:
+                    description: 'the remote id of the content. If present the content with the given remote id is returned'
         /<ID>:
             get:
                 description: 'Loads the content object for the given id. Depending on the Accept header the current version is embedded (i.e the current published version or if not exists the draft of the authenticated user)'
@@ -37,6 +40,9 @@
                         description: 'If the user is not authorized to read this object. This could also happen if there is no published version yet and another user owns a draft of this content'
                     404:
                         description: 'If the ID is not found'
+                queryParameters:
+                    languages:
+                        description: '(comma separated list) restricts the output of translatable fields to the given languages'
             patch:
                 description: 'this method updates the content metadata which is independent from a version.'
                 headers:
@@ -103,6 +109,13 @@
                                 description: 'If the ID or version is not found'
                             304:
                                 description: 'If the etag does not match the current one'
+                        queryParameters:
+                            fields:
+                                description: 'comma separated list of fields which should be returned in the response (see Content)'
+                            responseGroups:
+                                description: 'alternative: comma separated lists of predefined field groups (see REST API Spec v1)'
+                            languages:
+                                description: '(comma separated list) restricts the output of translatable fields to the given languages'
                     patch:
                         description: 'A specific draft is updated.'
                         headers:
@@ -127,6 +140,9 @@
                                 description: 'If the content id or version id does not exist'
                             412:
                                 description: 'If the current ETag does not match with the provided one in the If-Match header'
+                        queryParameters:
+                            languages:
+                                description: '(comma separated list) restricts the output of translatable fields to the given languages'
                 /<no>:
                     post:
                         description: 'The system creates a new draft version as a copy from the given version'
@@ -151,6 +167,11 @@
                                     description: 'If the user is not authorized to read this object'
                                 404:
                                     description: 'If the content object was not found'
+                            queryParameters:
+                                offset:
+                                    description: 'the offset of the result set'
+                                limit:
+                                    description: 'the number of relations returned'
                         /<ID>:
                             get:
                                 description: 'loads a relation for the given content object'
@@ -270,6 +291,11 @@
             responses:
                 404:
                     description: 'If the location with the given id (remoteId) does not exist'
+            queryParameters:
+                id:
+                    description: 'the id of the location. If present the location is with the given id is returned.'
+                remoteId:
+                    description: 'the remoteId of the location. If present the location with the given remoteId is returned'
         /<path>:
             get:
                 description: 'loads the location for the given path'
@@ -298,6 +324,11 @@
                             description: 'If the object with the given id does not exist'
                         401:
                             description: 'If the user is not authorized to read this object'
+                    queryParameters:
+                        offset:
+                            description: 'the offset of the result set'
+                        limit:
+                            description: 'the number of locations returned'
             post:
                 description: 'copies the subtree to another parent'
                 headers:
@@ -319,6 +350,9 @@
                     responses:
                         401:
                             description: 'If the location was not found'
+                    queryParameters:
+                        custom:
+                            description: '(default true) this flag indicates whether autogenerated (false) or manual url aliases (true) should be returned.'
         /<ID>:
             patch:
                 description: 'updates the location, this method can also be used to hide/unhide a location via the hidden field in the LocationUpdate'
@@ -422,6 +456,9 @@
             responses:
                 401:
                     description: 'If the user has no permission to read the sections'
+            queryParameters:
+                identifer:
+                    description: 'only the section with the given identifier is returned.'
         /<ID>:
             get:
                 description: 'Returns the section given by id'
@@ -468,6 +505,11 @@
                         - application/vnd.ez.api.Trash+xml
                         - application/vnd.ez.api.Trash+json
             responses: {  }
+            queryParameters:
+                limit:
+                    description: 'only <limit> items will be returned started by offset'
+                offset:
+                    description: 'offset of the result set'
         /<ID>:
             get:
                 description: 'Returns the trash item given by id'
@@ -706,6 +748,9 @@
             responses:
                 404:
                     description: 'If the content type group with the given identifier does not exist'
+            queryParameters:
+                identifier:
+                    description: 'the identifier of the content type group. If present the content type group is with the given identifier is returned.'
         /<ID>:
             get:
                 description: 'Returns the content type given by id'
@@ -770,6 +815,9 @@
                             description: 'If the user is not authorized to create this content type'
                         403:
                             description: 'If a content type with same identifier already exists'
+                    queryParameters:
+                        publish:
+                            description: '(default false) If true the content type is published after creating'
     /types:
         get:
             description: 'Returns a list of content types'
@@ -783,6 +831,19 @@
             responses:
                 401:
                     description: 'If the user has no permission to read the content types'
+            queryParameters:
+                identifier:
+                    description: 'retrieves the content type for the given identifer'
+                remoteId:
+                    description: 'retrieves the content type for the given remoteId'
+                limit:
+                    description: 'only <limit> items will be returned started by offset'
+                offset:
+                    description: 'offset of the result set'
+                orderby:
+                    description: 'one of (name | lastmodified)'
+                sort:
+                    description: 'one of (asc|desc)'
         /<ID>:
             get:
                 description: 'Returns the content type given by id'
@@ -888,6 +949,9 @@
                             description: 'If the user is not authorized to add a group'
                         403:
                             description: 'If the content type is already assigned to the group'
+                    queryParameters:
+                        group:
+                            description: '(uri) the uri of the group to which the content type should be linked'
     /type:
         /<ID>:
             /groups:
@@ -1013,6 +1077,13 @@
             responses:
                 401:
                     description: 'If the user has no permission to read user groups'
+            queryParameters:
+                roleId:
+                    description: 'lists user groups assigned to the given role'
+                id:
+                    description: 'retrieves the user group for the given Id'
+                remoteId:
+                    description: 'retrieves the user group for the given remoteId'
         /<ID>:
             /users:
                 get:
@@ -1029,6 +1100,11 @@
                             description: 'If the user has no permission to read user groups'
                         404:
                             description: 'If the user group does not exist'
+                    queryParameters:
+                        limit:
+                            description: 'only <limit> items will be returned started by offset'
+                        offset:
+                            description: 'offset of the result set'
             /subgroups:
                 get:
                     description: 'Returns a list of the sub groups'
@@ -1057,6 +1133,11 @@
             responses:
                 401:
                     description: 'If the user has no permission to read users'
+            queryParameters:
+                roleId:
+                    description: 'lists users assigned to the given role (ex: GET /user/users?roleId=/user/roles/1)'
+                remoteId:
+                    description: 'retrieves the user for the given remoteId (ex: GET /user/users?remoteId=55dd9713db75145f374bbd0b4f60ad29)'
         /<ID>:
             get:
                 description: 'loads the users of the group with the given <ID>'
@@ -1121,6 +1202,9 @@
                             description: 'If the new user group does not exist If the user is already in this group'
                         404:
                             description: 'If the user does not exist'
+                    queryParameters:
+                        group:
+                            description: 'the new parent group resource of the user'
                 /<ID>:
                     delete:
                         description: 'Unassigns the user from a user group'
@@ -1163,6 +1247,13 @@
             responses:
                 401:
                     description: 'If the user has no permission to read roles'
+            queryParameters:
+                identifier:
+                    description: 'Restricts the result to a list containing the role with the given identifier. If the role is not found an empty list is returned.'
+                limit:
+                    description: 'only <limit> items will be returned started by offset'
+                offset:
+                    description: 'offset of the result set'
         /<ID>:
             get:
                 description: 'loads a role for the given <ID>'
@@ -1277,6 +1368,9 @@
             responses:
                 401:
                     description: 'If the user has no permission to read roles'
+            queryParameters:
+                userId:
+                    description: 'the user id'
     /sessions:
         post:
             description: 'Performs a login for the user or check if session exists and returns the session and session cookie. The client will need to remember both session name/id and CSRF token as this is for security reasons not exposed via GET.'

@@ -47,6 +47,10 @@ function addFeature( &$resources, Feature $feature )
     $resourceProperties = ['description' => $feature->getDescription()];
     $resourceProperties['headers'] = $feature->getHeaders();
     $resourceProperties['responses'] = $feature->getErrorCodes();
+    $queryParameters = $feature->getQueryParameters();
+    if ( count( $queryParameters ) ) {
+        $resourceProperties['queryParameters'] = $queryParameters;
+    }
 
     $leafVariable = '$resources' . implode( $resourceParts ) . "['$method']";
 
@@ -172,6 +176,23 @@ class Feature extends ElementBase
     function getDescription()
     {
         return $this->getTableRowContent( 'Description:' );
+    }
+
+    function getQueryParameters()
+    {
+        $parameters = [];
+        $xpathQuery = sprintf(
+            "//div[@id='%s']/table//tr[th/text()='Parameters:']/td/table/tbody/tr",
+            $this->getId()
+        );
+
+        foreach ( $this->xpathQuery( $xpathQuery ) as $parameterNode ) {
+            $parameterName = $this->xpathNodeValue( $this->xpath->query( './/th', $parameterNode ) );
+            $parameterDescription = $this->xpathNodeValue( $this->xpath->query( './/td', $parameterNode ) );
+            $parameters[$parameterName] = ['description' => $parameterDescription];
+        }
+
+        return $parameters;
     }
 
     function getErrorCodes()
