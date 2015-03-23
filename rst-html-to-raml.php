@@ -174,6 +174,26 @@ class Feature extends ElementBase
         $resource = str_replace( '/content/objects/<ID>', '/content/objects/{contentId}', $resource );
         $resource = str_replace( '/versions/<no>', '/versions/{versionNo}', $resource );
         $resource = str_replace( '/versions/<versionNo>', '/versions/{versionNo}', $resource );
+        $resource = str_replace( '<imageId>', '{imageId}', $resource );
+        $resource = str_replace( '<variationIdentifier>', '{variationIdentifier}', $resource );
+        $resource = str_replace( '/locations/<path>', '/locations/{locationPath}', $resource );
+        $resource = str_replace( '/locations/<ID>', '/locations/{locationId}', $resource );
+        $resource = str_replace( '/views/<identifier>', '/views/{viewIdentifier}', $resource );
+        $resource = str_replace( '/sections/<ID>', '/sections/{sectionId}', $resource );
+        $resource = str_replace( '/trash/<ID>', '/trash/{trashId}', $resource );
+        $resource = str_replace( '/objectstategroups/<ID>', '/objectstategroups/{objectStateGroupId}', $resource );
+        $resource = str_replace( '/objectstates/<ID>', '/objectstates/{objectStateId}', $resource );
+        $resource = str_replace( '/urlaliases/<ID>', '/urlaliases/{urlAliasId}', $resource );
+        $resource = str_replace( '/urlwildcards/<ID>', '/urlwildcards/{urlWildcardId}', $resource );
+        $resource = str_replace( '/typegroups/<ID>', '/typegroups/{contentTypeGroupId}', $resource );
+        $resource = str_replace( '/type/<ID>', '/type/{contentTypeId}', $resource );
+        $resource = str_replace( '/groups/<ID>', '/groups/{contentTypeGroupId}', $resource );
+        $resource = str_replace( '/groups/<path>', '/groups/{userGroupPath}', $resource );
+        $resource = str_replace( '/users/<ID>', '/users/{userId}', $resource );
+        $resource = str_replace( '/roles/<ID>', '/roles/{roleId}', $resource );
+        $resource = str_replace( '/policies/<ID>', '/policies/{policyId}', $resource );
+        $resource = str_replace( '/<sessionID>', '/{sessionId}', $resource );
+        $resource = str_replace( '/relations/<ID>', '/relations/{relationId}', $resource );
 
         return $resource;
     }
