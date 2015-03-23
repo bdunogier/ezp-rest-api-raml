@@ -34,11 +34,10 @@ $dumper = new Dumper();
 $yaml = $dumper->dump($resources, 10);
 echo $yaml;
 
-// print_r( $resources );
-
 function addFeature( &$resources, Feature $feature )
 {
-    $resourceParts = explode( '/', trim( $feature->getResource(), '/' ) );
+    $resource = $feature->getResource();
+    $resourceParts = explode( '/', trim( $resource, '/' ) );
     $resourceParts = array_map(
         function( $value ) { return "['/$value']"; },
         $resourceParts
@@ -150,22 +149,27 @@ class Feature extends ElementBase
 
     function getMethod()
     {
-        $method = $this->getTableRowContent( 'Method:' );
+        $method = strtolower( $this->getTableRowContent( 'Method:' ) );
 
-        if ( strpos( $method, 'PATCH or POST' ) !== false ) {
-            return 'patch';
-        } else if ( strpos( $method, 'MOVE or POST' ) !== false ) {
+        if ( strpos( $method, 'patch or post' ) !== false ) {
+            $method = 'patch';
+        } else if ( strpos( $method, 'get (not implemented)' ) !== false ) {
+            $method = 'get';
+        } else if ( strpos( $method, 'publish or post' ) !== false ) {
+            // return 'publish';
+            $method = 'post';
+        } else if ( strpos( $method, 'move or post' ) !== false ) {
             // return 'move';
-            return 'post';
-        } else if ( strpos( $method, 'COPY or POST' ) !== false ) {
+            $method = 'post';
+        } else if ( strpos( $method, 'copy or post' ) !== false ) {
             // return 'copy';
-            return 'post';
-        } else if ( strpos( $method, 'SWAP or POST' ) !== false ) {
+            $method = 'post';
+        } else if ( strpos( $method, 'swap or post' ) !== false ) {
             // return 'swap';
-            return 'post';
-        } else {
-            return strtolower( $method );
+            $method = 'post';
         }
+
+        return $method;
     }
 
     function getResource()
@@ -298,8 +302,8 @@ abstract class ElementBase
     protected function getTableRowContent( $headerRowContent )
     {
         $xpathQuery = sprintf(
-            "//div[@id='%s']/table//tr[th/text()='%s']//td/p",
-            $this->getId(), $headerRowContent
+            "//div[@id='%s']/table//tr[th/text()='%s']//td/p|//div[@id='%s']/table//tr[th/text()='%s']//td",
+            $this->getId(), $headerRowContent, $this->getId(), $headerRowContent
         );
 
         return $this->textNodeByXpath( $xpathQuery );

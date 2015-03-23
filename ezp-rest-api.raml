@@ -81,6 +81,27 @@
                     destination:
                         description: n/a
                 responses: {  }
+            /currentversion:
+                get:
+                    description: 'Redirects to the current version of the content object'
+                    headers: {  }
+                    responses:
+                        404:
+                            description: 'If the resource does not exist'
+                post:
+                    description: 'The system creates a new draft version as a copy from the current version'
+                    headers:
+                        accept:
+                            enum:
+                                - application/vnd.ez.api.Version+xml
+                                - application/vnd.ez.api.Version+json
+                    responses:
+                        401:
+                            description: 'If the user is not authorized to update this object'
+                        403:
+                            description: 'If the current version is already a draft'
+                        404:
+                            description: 'If the content object was not found'
             /versions:
                 get:
                     description: 'Returns a list of all versions of the content. This method does not include fields and relations in the Version elements of the response.'
@@ -144,17 +165,25 @@
                             languages:
                                 description: '(comma separated list) restricts the output of translatable fields to the given languages'
                     post:
-                        description: 'The system creates a new draft version as a copy from the given version'
-                        headers:
-                            accept:
-                                enum:
-                                    - application/vnd.ez.api.Version+xml
-                                    - application/vnd.ez.api.Version+json
+                        description: 'The content version is published'
+                        headers: {  }
                         responses:
-                            401:
-                                description: 'If the user is not authorized to update this object'
                             404:
-                                description: 'If the content object was not found'
+                                description: 'if the content object or version nr was not found'
+                            401:
+                                description: 'If the user is not authorized to publish this version'
+                            403:
+                                description: 'If the version is not a draft'
+                    delete:
+                        description: 'The version is deleted'
+                        headers: {  }
+                        responses:
+                            404:
+                                description: 'if the content object or version nr was not found'
+                            401:
+                                description: 'If the user is not authorized to delete this version'
+                            403:
+                                description: 'If the version is in state published'
                     /relations:
                         get:
                             description: 'loads the relations of the given version'
@@ -171,7 +200,7 @@
                                     description: 'the offset of the result set'
                                 limit:
                                     description: 'the number of relations returned'
-                        /<ID>:
+                        '/{relationId}':
                             get:
                                 description: 'loads a relation for the given content object'
                                 headers:
@@ -179,6 +208,13 @@
                                 responses:
                                     404: { description: 'If the object with the given id or the relation does not exist' }
                                     401: { description: 'If the user is not authorized to read this object' }
+                            delete:
+                                description: 'Deletes a relation of the given draft.'
+                                headers: {  }
+                                responses:
+                                    404: { description: 'content object was not found or the relation was not found in the given version' }
+                                    401: { description: 'If the user is not authorized to delete this relation' }
+                                    403: { description: 'If the relation is not of type COMMON or the given version is not a draft' }
                         post:
                             description: 'Creates a new relation of type COMMON for the given draft.'
                             headers:
@@ -193,21 +229,11 @@
                                     description: 'If a relation to the destId already exists or the destId does not exist or the version is not a draft.'
                                 404:
                                     description: 'If the object or version with the given id does not exist'
-            /currentversion:
-                post:
-                    description: 'The system creates a new draft version as a copy from the current version'
-                    headers:
-                        accept:
-                            enum:
-                                - application/vnd.ez.api.Version+xml
-                                - application/vnd.ez.api.Version+json
-                    responses:
-                        401:
-                            description: 'If the user is not authorized to update this object'
-                        403:
-                            description: 'If the current version is already a draft'
-                        404:
-                            description: 'If the content object was not found'
+            /relations:
+                get:
+                    description: 'redirects to the relations of the current version'
+                    headers: {  }
+                    responses: {  }
             /locations:
                 post:
                     description: 'Creates a new location for the given content object'
@@ -338,6 +364,14 @@
                         description: 'If the location with the given id does not exist'
                     401:
                         description: 'If the user is not authorized to move this location'
+            delete:
+                description: 'Deletes the complete subtree for the given path. Every content object is deleted which does not have any other location. Otherwise the deleted location is removed from the content object. The children a recursively deleted.'
+                headers: {  }
+                responses:
+                    404:
+                        description: 'If the location with the given id does not exist'
+                    401:
+                        description: 'If the user is not authorized to delete this subtree'
             /urlaliases:
                 get:
                     description: 'Returns the list of url aliases for a location'
@@ -424,6 +458,14 @@
                     responses:
                         401:
                             description: 'if the view is not public and from another user'
+            delete:
+                description: 'the given view is deleted'
+                headers: {  }
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete this view'
+                    404:
+                        description: 'If the view does not exist'
     /sections:
         post:
             description: 'Creates a new section'
@@ -534,6 +576,22 @@
                         description: 'if the given parent location does not exist'
                     404:
                         description: 'if the given trash item does not exist'
+        delete:
+            description: 'Empties the trash'
+            headers: {  }
+            responses:
+                401:
+                    description: 'If the user is not authorized to empty all trash items'
+        /items:
+            /<ID>:
+                delete:
+                    description: 'Deletes the given trash item'
+                    headers: {  }
+                    responses:
+                        401:
+                            description: 'If the user is not authorized to empty the given trash item'
+                        404:
+                            description: 'if the given trash item does not exist'
     /objectstategroups:
         post:
             description: 'Creates a new objectstategroup'
@@ -590,6 +648,14 @@
                     if-match:
                         description: '<etag>'
                 responses: {  }
+            delete:
+                description: 'the given object state group including the object states is deleted'
+                headers: {  }
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete an object state group'
+                    404:
+                        description: 'If the object statee group does not exist'
             /objectstates:
                 post:
                     description: 'Creates a new objectstate'
@@ -646,6 +712,14 @@
                             if-match:
                                 description: '<etag>'
                         responses: {  }
+                    delete:
+                        description: 'the given object state is deleted'
+                        headers: {  }
+                        responses:
+                            401:
+                                description: 'If the user is not authorized to delete an object state group'
+                            404:
+                                description: 'If the object state does not exist'
     /urlaliases:
         post:
             description: 'Creates a new url alias'
@@ -684,6 +758,14 @@
                             - application/vnd.ez.api.UrlAlias+xml
                             - application/vnd.ez.api.UrlAlias+json
                 responses: {  }
+            delete:
+                description: 'the given url alias is deleted'
+                headers: {  }
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete an url alias'
+                    404:
+                        description: 'If the url alias does not exist'
     /urlwildcards:
         post:
             description: 'Creates a new url wildcard'
@@ -722,6 +804,14 @@
                             - application/vnd.ez.api.UrlWildcard+xml
                             - application/vnd.ez.api.UrlWildcard+json
                 responses: {  }
+            delete:
+                description: 'the given url wildcard is deleted'
+                headers: {  }
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete an url wildcard'
+                    404:
+                        description: 'If the url wildcard does not exist'
     /typegroups:
         post:
             description: 'Creates a new content type group'
@@ -783,6 +873,16 @@
                         description: 'If a content type group with the given identifier already exists'
                     412:
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
+            delete:
+                description: 'the given content type group is deleted'
+                headers: {  }
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete this content type'
+                    403:
+                        description: 'If the content type group is not empty'
+                    404:
+                        description: 'If the content type does not exist'
             /types:
                 get:
                     description: 'Returns a list of content types of the group'
@@ -818,42 +918,7 @@
                         publish:
                             description: '(default false) If true the content type is published after creating'
     /types:
-        get:
-            description: 'Returns a list of content types'
-            headers:
-                accept:
-                    enum:
-                        - application/vnd.ez.api.ContentTypeInfoList+xml
-                        - application/vnd.ez.api.ContentTypeInfoList+json
-                        - application/vnd.ez.api.ContentTypeList+xml
-                        - application/vnd.ez.api.ContentTypeList+json
-            responses:
-                401:
-                    description: 'If the user has no permission to read the content types'
-            queryParameters:
-                identifier:
-                    description: 'retrieves the content type for the given identifer'
-                remoteId:
-                    description: 'retrieves the content type for the given remoteId'
-                limit:
-                    description: 'only <limit> items will be returned started by offset'
-                offset:
-                    description: 'offset of the result set'
-                orderby:
-                    description: 'one of (name | lastmodified)'
-                sort:
-                    description: 'one of (asc|desc)'
-        '/{contentTypeId}':
-            get:
-                description: 'Returns the content type given by id'
-                headers:
-                    accept:
-                        enum:
-                            - application/vnd.ez.api.ContentType+xml
-                            - application/vnd.ez.api.ContentType+json
-                    if-none-match:
-                        description: '<etag>'
-                responses: {  }
+        /<ID>:
             post:
                 description: 'Creates a draft and updates it with the given data'
                 headers:
@@ -872,6 +937,16 @@
                         description: 'If the user is not authorized to create the draft'
                     403:
                         description: 'If a content type with the given new identifier already exists. If there exists already a draft.'
+            get:
+                description: 'Returns the content type given by id'
+                headers:
+                    accept:
+                        enum:
+                            - application/vnd.ez.api.ContentType+xml
+                            - application/vnd.ez.api.ContentType+json
+                    if-none-match:
+                        description: '<etag>'
+                responses: {  }
             /draft:
                 patch:
                     description: 'Updates meta data of a draft. This method does not handle field definitions'
@@ -933,6 +1008,42 @@
                                     description: 'If the user is not authorized to update the field definition'
                                 403:
                                     description: 'If a field definition with the given new identifier already exists in the given content type.'
+                        delete:
+                            description: 'the given field definition is deleted'
+                            headers: {  }
+                            responses:
+                                401:
+                                    description: 'If the user is not authorized to delete this content type'
+                                403:
+                                    description: 'if there is no draft of the content type assigned to the authenticated user'
+                post:
+                    description: 'Publishes a content type draft'
+                    headers: {  }
+                    responses:
+                        401:
+                            description: 'If the user is not authorized to publish this content type draft'
+                        403:
+                            description: 'If the content type draft is not complete e.g. there is no field definition provided'
+                        404:
+                            description: 'If there is no draft or content type with the given ID'
+                delete:
+                    description: 'the given content type draft is deleted'
+                    headers: {  }
+                    responses:
+                        401:
+                            description: 'If the user is not authorized to delete this content type draft'
+                        404:
+                            description: 'If the content type/draft does not exist'
+            delete:
+                description: 'the given content type is deleted'
+                headers: {  }
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete this content type'
+                    403:
+                        description: 'If there are object instances of this content type - the response should contain an ErrorMessage'
+                    404:
+                        description: 'If the content type does not exist'
             /groups:
                 post:
                     description: 'links a content type group to the content type and returns the updated group list'
@@ -951,8 +1062,33 @@
                     queryParameters:
                         group:
                             description: '(uri) the uri of the group to which the content type should be linked'
+        get:
+            description: 'Returns a list of content types'
+            headers:
+                accept:
+                    enum:
+                        - application/vnd.ez.api.ContentTypeInfoList+xml
+                        - application/vnd.ez.api.ContentTypeInfoList+json
+                        - application/vnd.ez.api.ContentTypeList+xml
+                        - application/vnd.ez.api.ContentTypeList+json
+            responses:
+                401:
+                    description: 'If the user has no permission to read the content types'
+            queryParameters:
+                identifier:
+                    description: 'retrieves the content type for the given identifer'
+                remoteId:
+                    description: 'retrieves the content type for the given remoteId'
+                limit:
+                    description: 'only <limit> items will be returned started by offset'
+                offset:
+                    description: 'offset of the result set'
+                orderby:
+                    description: 'one of (name | lastmodified)'
+                sort:
+                    description: 'one of (asc|desc)'
     /type:
-        /<ID>:
+        '/{contentTypeId}':
             /groups:
                 get:
                     description: 'Returns the content type groups the content type belongs to.'
@@ -979,6 +1115,11 @@
                                 description: 'If the resource does not exist'
 /user:
     /groups:
+        /root:
+            get:
+                description: 'Redirects to the root user group'
+                headers: {  }
+                responses: {  }
         '/{userGroupPath}':
             get:
                 description: 'loads a user groups for the given <path>'
@@ -1031,6 +1172,14 @@
                         description: 'If the user is not authorized to update the user group'
                     412:
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
+            delete:
+                description: 'the given user group is deleted'
+                headers: {  }
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete this content type'
+                    403:
+                        description: 'If the user group is not empty'
             post:
                 description: 'moves the user group to another parent.'
                 headers:
@@ -1064,6 +1213,26 @@
                             description: 'If a user with the same login already exists'
                         404:
                             description: 'If the group with the given ID does not exist'
+            '/roles for user group ':
+                /user:
+                    /users:
+                        '/{userId}':
+                            '/roles for user':
+                                get:
+                                    description: 'Returns a list of all roles assigned to the given user group'
+                                    headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] } }
+                                    responses: { 401: { description: 'If the user has no permission to read roles' } }
+                                post:
+                                    description: 'assign a role to a user or user group.'
+                                    headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] }, content-type: { enum: [application/vnd.ez.api.RoleAssignInput+json, application/vnd.ez.api.RoleAssignInput+xml] } }
+                                    responses: { 400: { description: 'If validation of limitation in RoleAssignInput fails' }, 401: { description: 'If the user is not authorized to assign this role' } }
+            /roles:
+                '/{roleId} for user group ':
+                    /user:
+                        /users:
+                            '/{userId}':
+                                /roles:
+                                    '/{roleId} for user': { get: { description: 'Returns a roleassignment to the given user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignment+xml, application/vnd.ez.api.RoleAssignment+json] } }, responses: { 401: { description: 'If the user has no permission to read roles' } } }, delete: { description: 'the given role is removed from the user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] } }, responses: { 401: { description: 'If the user is not authorized to delete this content type' } } } }
         get:
             description: 'Load user groups for either an id or remoteId or role.'
             headers:
@@ -1174,6 +1343,16 @@
                         description: 'If the user does not exist'
                     412:
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
+            delete:
+                description: 'the given user is deleted'
+                headers: {  }
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete this user'
+                    403:
+                        description: 'If the user is the same as the authenticated user'
+                    404:
+                        description: 'If the user does not exist'
             /groups:
                 get:
                     description: 'Returns a list of user groups the user belongs to. The returned list includes the resources for unassigning a user group if the user is in multiple groups.'
@@ -1288,6 +1467,12 @@
                         description: 'If the user is not authorized to update the role'
                     412:
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
+            delete:
+                description: 'the given role and all assignments to users or user groups are deleted'
+                headers: {  }
+                responses:
+                    401:
+                        description: 'If the user is not authorized to delete this role'
             /policies:
                 get:
                     description: 'loads policies for the given role'
@@ -1301,6 +1486,12 @@
                             description: 'If the user has no permission to read roles'
                         404:
                             description: 'If the role does not exist'
+                delete:
+                    description: 'all policies of the given role are deleted'
+                    headers: {  }
+                    responses:
+                        401:
+                            description: 'If the user is not authorized to delete this content type'
                 '/{policyId}':
                     get:
                         description: 'loads a policy for the given module and function'
@@ -1338,6 +1529,14 @@
                                 description: 'If the role does not exist'
                             412:
                                 description: 'If the current ETag does not match with the provided one in the If-Match header'
+                    delete:
+                        description: 'the given policy is deleted'
+                        headers: {  }
+                        responses:
+                            401:
+                                description: 'If the user is not authorized to delete this content type'
+                            404:
+                                description: 'If the role or policy does not exist'
                 post:
                     description: 'creates a policy'
                     headers:
