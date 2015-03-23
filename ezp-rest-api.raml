@@ -21,13 +21,17 @@ mediaType: application/xml
                     enum:
                         - application/vnd.ez.api.ContentCreate+json
                         - application/vnd.ez.api.ContentCreate+xml
-            responses: {  }
+            responses:
+                201:
+                    description: success
         get:
             description: 'loads the content for a given remote id'
             headers: {  }
             responses:
                 404:
                     description: 'If the content with the given remote id does not exist'
+                307:
+                    description: success
             queryParameters:
                 remoteId:
                     description: 'the remote id of the content. If present the content with the given remote id is returned'
@@ -48,6 +52,8 @@ mediaType: application/xml
                         description: 'If the user is not authorized to read this object. This could also happen if there is no published version yet and another user owns a draft of this content'
                     404:
                         description: 'If the ID is not found'
+                    200:
+                        description: success
                 queryParameters:
                     languages:
                         description: '(comma separated list) restricts the output of translatable fields to the given languages'
@@ -75,6 +81,8 @@ mediaType: application/xml
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
                     415:
                         description: 'If the media-type is not one of those specified in Headers'
+                    200:
+                        description: success
             delete:
                 description: 'The content is deleted. If the content has locations (which is required in 4.x) on delete all locations assigned the content object are deleted via delete subtree.'
                 headers: {  }
@@ -83,12 +91,16 @@ mediaType: application/xml
                         description: 'content object was not found'
                     401:
                         description: 'If the user is not authorized to delete this object'
+                    200:
+                        description: success
             post:
                 description: 'Creates a new content object as copy under the given parent location given in the destination header.'
                 headers:
                     destination:
                         description: n/a
-                responses: {  }
+                responses:
+                    201:
+                        description: success
             /currentversion:
                 get:
                     description: 'Redirects to the current version of the content object'
@@ -96,6 +108,8 @@ mediaType: application/xml
                     responses:
                         404:
                             description: 'If the resource does not exist'
+                        307:
+                            description: success
                 post:
                     description: 'The system creates a new draft version as a copy from the current version'
                     headers:
@@ -110,6 +124,8 @@ mediaType: application/xml
                             description: 'If the current version is already a draft'
                         404:
                             description: 'If the content object was not found'
+                        201:
+                            description: success
             /versions:
                 get:
                     description: 'Returns a list of all versions of the content. This method does not include fields and relations in the Version elements of the response.'
@@ -121,6 +137,8 @@ mediaType: application/xml
                     responses:
                         401:
                             description: 'If the user has no permission to read the versions'
+                        200:
+                            description: success
                 '/{versionNo}':
                     get:
                         description: 'Loads a specific version of a content object. This method returns fields and relations'
@@ -138,6 +156,8 @@ mediaType: application/xml
                                 description: 'If the ID or version is not found'
                             304:
                                 description: 'If the etag does not match the current one'
+                            200:
+                                description: success
                         queryParameters:
                             fields:
                                 description: 'comma separated list of fields which should be returned in the response (see Content)'
@@ -169,6 +189,8 @@ mediaType: application/xml
                                 description: 'If the content id or version id does not exist'
                             412:
                                 description: 'If the current ETag does not match with the provided one in the If-Match header'
+                            200:
+                                description: success
                         queryParameters:
                             languages:
                                 description: '(comma separated list) restricts the output of translatable fields to the given languages'
@@ -182,6 +204,8 @@ mediaType: application/xml
                                 description: 'If the user is not authorized to publish this version'
                             403:
                                 description: 'If the version is not a draft'
+                            204:
+                                description: success
                     delete:
                         description: 'The version is deleted'
                         headers: {  }
@@ -192,6 +216,8 @@ mediaType: application/xml
                                 description: 'If the user is not authorized to delete this version'
                             403:
                                 description: 'If the version is in state published'
+                            204:
+                                description: success
                     /relations:
                         get:
                             description: 'loads the relations of the given version'
@@ -203,6 +229,8 @@ mediaType: application/xml
                                     description: 'If the user is not authorized to read this object'
                                 404:
                                     description: 'If the content object was not found'
+                                200:
+                                    description: success
                             queryParameters:
                                 offset:
                                     description: 'the offset of the result set'
@@ -216,6 +244,7 @@ mediaType: application/xml
                                 responses:
                                     404: { description: 'If the object with the given id or the relation does not exist' }
                                     401: { description: 'If the user is not authorized to read this object' }
+                                    200: { description: success }
                             delete:
                                 description: 'Deletes a relation of the given draft.'
                                 headers: {  }
@@ -223,6 +252,7 @@ mediaType: application/xml
                                     404: { description: 'content object was not found or the relation was not found in the given version' }
                                     401: { description: 'If the user is not authorized to delete this relation' }
                                     403: { description: 'If the relation is not of type COMMON or the given version is not a draft' }
+                                    204: { description: success }
                         post:
                             description: 'Creates a new relation of type COMMON for the given draft.'
                             headers:
@@ -237,11 +267,15 @@ mediaType: application/xml
                                     description: 'If a relation to the destId already exists or the destId does not exist or the version is not a draft.'
                                 404:
                                     description: 'If the object or version with the given id does not exist'
+                                201:
+                                    description: success
             /relations:
                 get:
                     description: 'redirects to the relations of the current version'
                     headers: {  }
-                    responses: {  }
+                    responses:
+                        307:
+                            description: success
             /locations:
                 post:
                     description: 'Creates a new location for the given content object'
@@ -261,6 +295,8 @@ mediaType: application/xml
                             description: 'If the user is not authorized to create this location'
                         403:
                             description: 'If a location under the given parent id already exists'
+                        200:
+                            description: success
                 get:
                     description: 'loads all locations for the given content object'
                     headers:
@@ -275,6 +311,8 @@ mediaType: application/xml
                             description: 'If the object with the given id does not exist'
                         401:
                             description: 'If the user is not authorized to read this object'
+                        200:
+                            description: success
             /objectstates:
                 get:
                     description: 'Returns the object states of content'
@@ -285,7 +323,9 @@ mediaType: application/xml
                                 - application/vnd.ez.api.ContentObjectStates+json
                         if-none-match:
                             description: '<etag>'
-                    responses: {  }
+                    responses:
+                        200:
+                            description: success
                 patch:
                     description: 'Updates object states of content. An object state in the input overrides the state of the object state group.'
                     headers:
@@ -299,7 +339,9 @@ mediaType: application/xml
                                 - application/vnd.ez.api.ContentObjectStates+xml
                         if-match:
                             description: '<etag>'
-                    responses: {  }
+                    responses:
+                        200:
+                            description: success
     /binary:
         /images:
             '/{imageId}':
@@ -317,6 +359,8 @@ mediaType: application/xml
                                     description: 'if variationIdentifier doesn''t match any known variation'
                                 401:
                                     description: 'If the user is not authorized to read this object'
+                                200:
+                                    description: success
     /locations:
         get:
             description: 'loads the location for a given id (x)or remote id'
@@ -324,6 +368,8 @@ mediaType: application/xml
             responses:
                 404:
                     description: 'If the location with the given id (remoteId) does not exist'
+                307:
+                    description: success
             queryParameters:
                 id:
                     description: 'the id of the location. If present the location is with the given id is returned.'
@@ -344,6 +390,8 @@ mediaType: application/xml
                         description: 'If the location with the given path does not exist'
                     401:
                         description: 'If the user is not authorized to read this location'
+                    200:
+                        description: success
             /children:
                 get:
                     description: 'loads all child locations for the given parent location'
@@ -357,6 +405,8 @@ mediaType: application/xml
                             description: 'If the object with the given id does not exist'
                         401:
                             description: 'If the user is not authorized to read this object'
+                        200:
+                            description: success
                     queryParameters:
                         offset:
                             description: 'the offset of the result set'
@@ -372,6 +422,8 @@ mediaType: application/xml
                         description: 'If the location with the given id does not exist'
                     401:
                         description: 'If the user is not authorized to move this location'
+                    201:
+                        description: success
             delete:
                 description: 'Deletes the complete subtree for the given path. Every content object is deleted which does not have any other location. Otherwise the deleted location is removed from the content object. The children a recursively deleted.'
                 headers: {  }
@@ -380,6 +432,8 @@ mediaType: application/xml
                         description: 'If the location with the given id does not exist'
                     401:
                         description: 'If the user is not authorized to delete this subtree'
+                    204:
+                        description: success
             /urlaliases:
                 get:
                     description: 'Returns the list of url aliases for a location'
@@ -391,6 +445,8 @@ mediaType: application/xml
                     responses:
                         401:
                             description: 'If the location was not found'
+                        200:
+                            description: success
                     queryParameters:
                         custom:
                             description: '(default true) this flag indicates whether autogenerated (false) or manual url aliases (true) should be returned.'
@@ -413,6 +469,8 @@ mediaType: application/xml
                         description: 'If the location with the given id does not exist'
                     401:
                         description: 'If the user is not authorized to update this location'
+                    200:
+                        description: success
             post:
                 description: 'Swaps the content of the location with the content of the given location'
                 headers:
@@ -423,6 +481,8 @@ mediaType: application/xml
                         description: 'If the location with the given id does not exist'
                     401:
                         description: 'If the user is not authorized to swap this location'
+                    204:
+                        description: success
     /views:
         post:
             description: 'executes a query and returns view including the results The View input reflects the criteria model of the public API.'
@@ -435,7 +495,9 @@ mediaType: application/xml
                     enum:
                         - application/vnd.ez.api.ViewInput+xml
                         - application/vnd.ez.api.ViewInput+json
-            responses: {  }
+            responses:
+                200:
+                    description: success
         get:
             description: 'Returns a list of view uris. The list includes public view and private view of the authenticated user.'
             headers:
@@ -443,7 +505,9 @@ mediaType: application/xml
                     enum:
                         - application/vnd.ez.api.RefList+xml
                         - application/vnd.ez.api.RefList+json
-            responses: {  }
+            responses:
+                200:
+                    description: success
         '/{viewIdentifier}':
             get:
                 description: 'Returns the view'
@@ -455,6 +519,8 @@ mediaType: application/xml
                 responses:
                     401:
                         description: 'if the view is not public and from another user'
+                    200:
+                        description: success
             /results:
                 get:
                     description: 'Returns result of the view'
@@ -466,6 +532,8 @@ mediaType: application/xml
                     responses:
                         401:
                             description: 'if the view is not public and from another user'
+                        200:
+                            description: success
             delete:
                 description: 'the given view is deleted'
                 headers: {  }
@@ -474,6 +542,8 @@ mediaType: application/xml
                         description: 'If the user is not authorized to delete this view'
                     404:
                         description: 'If the view does not exist'
+                    204:
+                        description: success
     /sections:
         post:
             description: 'Creates a new section'
@@ -493,6 +563,8 @@ mediaType: application/xml
                     description: 'If the user is not authorized to create this section'
                 403:
                     description: 'If a section with same identifier already exists'
+                201:
+                    description: success
         get:
             description: 'Returns a list of all sections'
             headers:
@@ -505,6 +577,8 @@ mediaType: application/xml
             responses:
                 401:
                     description: 'If the user has no permission to read the sections'
+                200:
+                    description: success
             queryParameters:
                 identifer:
                     description: 'only the section with the given identifier is returned.'
@@ -518,7 +592,9 @@ mediaType: application/xml
                             - application/vnd.ez.api.Section+json
                     if-none-match:
                         description: '<etag>'
-                responses: {  }
+                responses:
+                    200:
+                        description: success
             patch:
                 description: 'Updates a section'
                 headers:
@@ -532,7 +608,9 @@ mediaType: application/xml
                             - application/vnd.ez.api.SectionInput+xml
                     if-match:
                         description: '<etag>'
-                responses: {  }
+                responses:
+                    200:
+                        description: success
             delete:
                 description: 'the given section is deleted'
                 headers:
@@ -545,6 +623,8 @@ mediaType: application/xml
                         description: 'If the user is not authorized to delete this section'
                     404:
                         description: 'If the section does not exist'
+                    204:
+                        description: success
     /trash:
         get:
             description: 'Returns a list of all trash items'
@@ -553,7 +633,9 @@ mediaType: application/xml
                     enum:
                         - application/vnd.ez.api.Trash+xml
                         - application/vnd.ez.api.Trash+json
-            responses: {  }
+            responses:
+                200:
+                    description: success
             queryParameters:
                 limit:
                     description: 'only <limit> items will be returned started by offset'
@@ -572,6 +654,8 @@ mediaType: application/xml
                         description: 'If the user has no permission to read the trash item'
                     404:
                         description: 'If the trash item with the given id does not exist'
+                    200:
+                        description: success
             post:
                 description: 'Restores a trashItem'
                 headers:
@@ -584,12 +668,16 @@ mediaType: application/xml
                         description: 'if the given parent location does not exist'
                     404:
                         description: 'if the given trash item does not exist'
+                    201:
+                        description: success
         delete:
             description: 'Empties the trash'
             headers: {  }
             responses:
                 401:
                     description: 'If the user is not authorized to empty all trash items'
+                204:
+                    description: success
         /items:
             /<ID>:
                 delete:
@@ -600,6 +688,8 @@ mediaType: application/xml
                             description: 'If the user is not authorized to empty the given trash item'
                         404:
                             description: 'if the given trash item does not exist'
+                        204:
+                            description: success
     /objectstategroups:
         post:
             description: 'Creates a new objectstategroup'
@@ -619,6 +709,8 @@ mediaType: application/xml
                     description: 'If the user is not authorized to create an object state group'
                 403:
                     description: 'If a object state group with same identifier already exists'
+                201:
+                    description: success
         get:
             description: 'Returns a list of all object state groups'
             headers:
@@ -631,6 +723,8 @@ mediaType: application/xml
             responses:
                 401:
                     description: 'If the user has no permission to read object state groups'
+                200:
+                    description: success
         '/{objectStateGroupId}':
             get:
                 description: 'Returns the object state group given by id'
@@ -641,7 +735,9 @@ mediaType: application/xml
                             - application/vnd.ez.api.ObjectStateGroup+json
                     if-none-match:
                         description: '<etag>'
-                responses: {  }
+                responses:
+                    200:
+                        description: success
             patch:
                 description: 'Updates an object state group'
                 headers:
@@ -655,7 +751,9 @@ mediaType: application/xml
                             - application/vnd.ez.api.ObjectStateGroupUpdate+xml
                     if-match:
                         description: '<etag>'
-                responses: {  }
+                responses:
+                    200:
+                        description: success
             delete:
                 description: 'the given object state group including the object states is deleted'
                 headers: {  }
@@ -664,6 +762,8 @@ mediaType: application/xml
                         description: 'If the user is not authorized to delete an object state group'
                     404:
                         description: 'If the object statee group does not exist'
+                    204:
+                        description: success
             /objectstates:
                 post:
                     description: 'Creates a new objectstate'
@@ -683,6 +783,8 @@ mediaType: application/xml
                             description: 'If the user is not authorized to create an object state'
                         403:
                             description: 'If a object state with same identifier already exists in the given group'
+                        201:
+                            description: success
                 get:
                     description: 'Returns a list of all object states of the given group'
                     headers:
@@ -695,6 +797,8 @@ mediaType: application/xml
                     responses:
                         401:
                             description: 'If the user has no permission to read object states'
+                        200:
+                            description: success
                 '/{objectStateId}':
                     get:
                         description: 'Returns the object state'
@@ -705,7 +809,9 @@ mediaType: application/xml
                                     - application/vnd.ez.api.ObjectState+json
                             if-none-match:
                                 description: '<etag>'
-                        responses: {  }
+                        responses:
+                            200:
+                                description: success
                     patch:
                         description: 'Updates an object state'
                         headers:
@@ -719,7 +825,9 @@ mediaType: application/xml
                                     - application/vnd.ez.api.ObjectStateUpdate+xml
                             if-match:
                                 description: '<etag>'
-                        responses: {  }
+                        responses:
+                            200:
+                                description: success
                     delete:
                         description: 'the given object state is deleted'
                         headers: {  }
@@ -728,6 +836,8 @@ mediaType: application/xml
                                 description: 'If the user is not authorized to delete an object state group'
                             404:
                                 description: 'If the object state does not exist'
+                            204:
+                                description: success
     /urlaliases:
         post:
             description: 'Creates a new url alias'
@@ -747,6 +857,8 @@ mediaType: application/xml
                     description: 'If the user is not authorized to create an url alias'
                 403:
                     description: 'If an url alias same identifier already exists'
+                201:
+                    description: success
         get:
             description: 'Returns the list of url global aliases'
             headers:
@@ -757,6 +869,8 @@ mediaType: application/xml
             responses:
                 401:
                     description: 'If the user has no permission to read urlaliases'
+                200:
+                    description: success
         '/{urlAliasId}':
             get:
                 description: 'Returns the urlalias with the given id'
@@ -765,7 +879,9 @@ mediaType: application/xml
                         enum:
                             - application/vnd.ez.api.UrlAlias+xml
                             - application/vnd.ez.api.UrlAlias+json
-                responses: {  }
+                responses:
+                    200:
+                        description: success
             delete:
                 description: 'the given url alias is deleted'
                 headers: {  }
@@ -774,6 +890,8 @@ mediaType: application/xml
                         description: 'If the user is not authorized to delete an url alias'
                     404:
                         description: 'If the url alias does not exist'
+                    204:
+                        description: success
     /urlwildcards:
         post:
             description: 'Creates a new url wildcard'
@@ -793,6 +911,8 @@ mediaType: application/xml
                     description: 'If the user is not authorized to create an url wildcard'
                 403:
                     description: 'If an url wildcardsame identifier already exists'
+                201:
+                    description: success
         get:
             description: 'Returns a list of url wildcards'
             headers:
@@ -803,6 +923,8 @@ mediaType: application/xml
             responses:
                 401:
                     description: 'If the user has no permission to read urlwildcards'
+                200:
+                    description: success
         '/{urlWildcardId}':
             get:
                 description: 'Returns the urlwildcard with the given id'
@@ -811,7 +933,9 @@ mediaType: application/xml
                         enum:
                             - application/vnd.ez.api.UrlWildcard+xml
                             - application/vnd.ez.api.UrlWildcard+json
-                responses: {  }
+                responses:
+                    200:
+                        description: success
             delete:
                 description: 'the given url wildcard is deleted'
                 headers: {  }
@@ -820,6 +944,8 @@ mediaType: application/xml
                         description: 'If the user is not authorized to delete an url wildcard'
                     404:
                         description: 'If the url wildcard does not exist'
+                    204:
+                        description: success
     /typegroups:
         post:
             description: 'Creates a new content type group'
@@ -839,12 +965,16 @@ mediaType: application/xml
                     description: 'If the user is not authorized to create this content type group'
                 403:
                     description: 'If a content type group with same identifier already exists'
+                201:
+                    description: success
         get:
             description: 'loads the content type group for a given identifier'
             headers: {  }
             responses:
                 404:
                     description: 'If the content type group with the given identifier does not exist'
+                307:
+                    description: success
             queryParameters:
                 identifier:
                     description: 'the identifier of the content type group. If present the content type group is with the given identifier is returned.'
@@ -858,7 +988,9 @@ mediaType: application/xml
                             - application/vnd.ez.api.ContentTypeGroup+json
                     if-none-match:
                         description: '<etag>'
-                responses: {  }
+                responses:
+                    200:
+                        description: success
             patch:
                 description: 'Updates a content type group'
                 headers:
@@ -881,6 +1013,8 @@ mediaType: application/xml
                         description: 'If a content type group with the given identifier already exists'
                     412:
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
+                    200:
+                        description: success
             delete:
                 description: 'the given content type group is deleted'
                 headers: {  }
@@ -891,6 +1025,8 @@ mediaType: application/xml
                         description: 'If the content type group is not empty'
                     404:
                         description: 'If the content type does not exist'
+                    204:
+                        description: success
             /types:
                 get:
                     description: 'Returns a list of content types of the group'
@@ -904,6 +1040,8 @@ mediaType: application/xml
                     responses:
                         401:
                             description: 'If the user has no permission to read the content types'
+                        200:
+                            description: success
                 post:
                     description: 'Creates a new content type draft in the given content type group'
                     headers:
@@ -922,6 +1060,8 @@ mediaType: application/xml
                             description: 'If the user is not authorized to create this content type'
                         403:
                             description: 'If a content type with same identifier already exists'
+                        201:
+                            description: success
                     queryParameters:
                         publish:
                             description: '(default false) If true the content type is published after creating'
@@ -945,6 +1085,8 @@ mediaType: application/xml
                         description: 'If the user is not authorized to create the draft'
                     403:
                         description: 'If a content type with the given new identifier already exists. If there exists already a draft.'
+                    201:
+                        description: success
             get:
                 description: 'Returns the content type given by id'
                 headers:
@@ -954,7 +1096,9 @@ mediaType: application/xml
                             - application/vnd.ez.api.ContentType+json
                     if-none-match:
                         description: '<etag>'
-                responses: {  }
+                responses:
+                    200:
+                        description: success
             /draft:
                 patch:
                     description: 'Updates meta data of a draft. This method does not handle field definitions'
@@ -976,6 +1120,8 @@ mediaType: application/xml
                             description: 'If a content type with the given new identifier already exists.'
                         404:
                             description: 'If there is no draft on this content type'
+                        200:
+                            description: success
                 /fielddefinitions:
                     post:
                         description: 'Creates a new field definition for the given content type'
@@ -995,13 +1141,17 @@ mediaType: application/xml
                                 description: 'If the user is not authorized to add a field definition'
                             403:
                                 description: 'If a field definition with same identifier already exists in the given content type If the field definition is of singular type, already existing in the given content type If the field definition of the type that can''t be added to a content type that already has content instances is being added to such content type'
+                            201:
+                                description: success
                     /<ID>:
                         get:
                             description: 'Returns the field definition given by id'
                             headers:
                                 accept:
                                     enum: [application/vnd.ez.api.FieldDefinition+xml, application/vnd.ez.api.FieldDefinition+json]
-                            responses: {  }
+                            responses:
+                                200:
+                                    description: success
                         put:
                             description: 'Updates the attributes of a field definitions'
                             headers:
@@ -1016,6 +1166,8 @@ mediaType: application/xml
                                     description: 'If the user is not authorized to update the field definition'
                                 403:
                                     description: 'If a field definition with the given new identifier already exists in the given content type.'
+                                200:
+                                    description: success
                         delete:
                             description: 'the given field definition is deleted'
                             headers: {  }
@@ -1024,6 +1176,8 @@ mediaType: application/xml
                                     description: 'If the user is not authorized to delete this content type'
                                 403:
                                     description: 'if there is no draft of the content type assigned to the authenticated user'
+                                204:
+                                    description: success
                 post:
                     description: 'Publishes a content type draft'
                     headers: {  }
@@ -1034,6 +1188,8 @@ mediaType: application/xml
                             description: 'If the content type draft is not complete e.g. there is no field definition provided'
                         404:
                             description: 'If there is no draft or content type with the given ID'
+                        200:
+                            description: success
                 delete:
                     description: 'the given content type draft is deleted'
                     headers: {  }
@@ -1042,6 +1198,8 @@ mediaType: application/xml
                             description: 'If the user is not authorized to delete this content type draft'
                         404:
                             description: 'If the content type/draft does not exist'
+                        204:
+                            description: success
             delete:
                 description: 'the given content type is deleted'
                 headers: {  }
@@ -1052,6 +1210,8 @@ mediaType: application/xml
                         description: 'If there are object instances of this content type - the response should contain an ErrorMessage'
                     404:
                         description: 'If the content type does not exist'
+                    204:
+                        description: success
             /groups:
                 post:
                     description: 'links a content type group to the content type and returns the updated group list'
@@ -1067,6 +1227,8 @@ mediaType: application/xml
                             description: 'If the user is not authorized to add a group'
                         403:
                             description: 'If the content type is already assigned to the group'
+                        200:
+                            description: success
                     queryParameters:
                         group:
                             description: '(uri) the uri of the group to which the content type should be linked'
@@ -1082,6 +1244,8 @@ mediaType: application/xml
             responses:
                 401:
                     description: 'If the user has no permission to read the content types'
+                200:
+                    description: success
             queryParameters:
                 identifier:
                     description: 'retrieves the content type for the given identifer'
@@ -1105,7 +1269,9 @@ mediaType: application/xml
                             enum:
                                 - application/vnd.ez.api.ContentTypeGroupRefList+xml
                                 - application/vnd.ez.api.ContentTypeGroupRefList+json
-                    responses: {  }
+                    responses:
+                        200:
+                            description: success
                 '/{contentTypeGroupId}':
                     delete:
                         description: 'removes the given group from the content type and returns the updated group list'
@@ -1121,13 +1287,17 @@ mediaType: application/xml
                                 description: 'If the given group is the last one'
                             404:
                                 description: 'If the resource does not exist'
+                            200:
+                                description: success
 /user:
     /groups:
         /root:
             get:
                 description: 'Redirects to the root user group'
                 headers: {  }
-                responses: {  }
+                responses:
+                    301:
+                        description: success
         '/{userGroupPath}':
             get:
                 description: 'loads a user groups for the given <path>'
@@ -1143,6 +1313,8 @@ mediaType: application/xml
                         description: 'If the user has no permission to read user groups'
                     404:
                         description: 'If the user group does not exist'
+                    200:
+                        description: success
             /subgroups:
                 post:
                     description: 'Creates a new user group under the given parent. To create a top level group use /user/groups/subgroups'
@@ -1160,6 +1332,8 @@ mediaType: application/xml
                             description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
                         401:
                             description: 'If the user is not authorized to create this user group'
+                        201:
+                            description: success
             patch:
                 description: 'Updates a user group'
                 headers:
@@ -1180,6 +1354,8 @@ mediaType: application/xml
                         description: 'If the user is not authorized to update the user group'
                     412:
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
+                    200:
+                        description: success
             delete:
                 description: 'the given user group is deleted'
                 headers: {  }
@@ -1188,6 +1364,8 @@ mediaType: application/xml
                         description: 'If the user is not authorized to delete this content type'
                     403:
                         description: 'If the user group is not empty'
+                    200:
+                        description: success
             post:
                 description: 'moves the user group to another parent.'
                 headers:
@@ -1200,6 +1378,8 @@ mediaType: application/xml
                         description: 'If the new parent does not exist'
                     404:
                         description: 'If the user group does not exist'
+                    201:
+                        description: success
             /users:
                 post:
                     description: 'Creates a new user in the given group'
@@ -1221,6 +1401,8 @@ mediaType: application/xml
                             description: 'If a user with the same login already exists'
                         404:
                             description: 'If the group with the given ID does not exist'
+                        201:
+                            description: success
             '/roles for user group ':
                 /user:
                     /users:
@@ -1229,18 +1411,18 @@ mediaType: application/xml
                                 get:
                                     description: 'Returns a list of all roles assigned to the given user group'
                                     headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] } }
-                                    responses: { 401: { description: 'If the user has no permission to read roles' } }
+                                    responses: { 401: { description: 'If the user has no permission to read roles' }, 200: { description: success } }
                                 post:
                                     description: 'assign a role to a user or user group.'
                                     headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] }, content-type: { enum: [application/vnd.ez.api.RoleAssignInput+json, application/vnd.ez.api.RoleAssignInput+xml] } }
-                                    responses: { 400: { description: 'If validation of limitation in RoleAssignInput fails' }, 401: { description: 'If the user is not authorized to assign this role' } }
+                                    responses: { 400: { description: 'If validation of limitation in RoleAssignInput fails' }, 401: { description: 'If the user is not authorized to assign this role' }, 200: { description: success } }
             /roles:
                 '/{roleId} for user group ':
                     /user:
                         /users:
                             '/{userId}':
                                 /roles:
-                                    '/{roleId} for user': { get: { description: 'Returns a roleassignment to the given user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignment+xml, application/vnd.ez.api.RoleAssignment+json] } }, responses: { 401: { description: 'If the user has no permission to read roles' } } }, delete: { description: 'the given role is removed from the user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] } }, responses: { 401: { description: 'If the user is not authorized to delete this content type' } } } }
+                                    '/{roleId} for user': { get: { description: 'Returns a roleassignment to the given user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignment+xml, application/vnd.ez.api.RoleAssignment+json] } }, responses: { 401: { description: 'If the user has no permission to read roles' }, 200: { description: success } } }, delete: { description: 'the given role is removed from the user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] } }, responses: { 401: { description: 'If the user is not authorized to delete this content type' }, 200: { description: success } } } }
         get:
             description: 'Load user groups for either an id or remoteId or role.'
             headers:
@@ -1253,6 +1435,8 @@ mediaType: application/xml
             responses:
                 401:
                     description: 'If the user has no permission to read user groups'
+                200:
+                    description: success
             queryParameters:
                 roleId:
                     description: 'lists user groups assigned to the given role'
@@ -1276,6 +1460,8 @@ mediaType: application/xml
                             description: 'If the user has no permission to read user groups'
                         404:
                             description: 'If the user group does not exist'
+                        200:
+                            description: success
                     queryParameters:
                         limit:
                             description: 'only <limit> items will be returned started by offset'
@@ -1296,6 +1482,8 @@ mediaType: application/xml
                             description: 'If the user has no permission to read user groups'
                         404:
                             description: 'If the user group does not exist'
+                        200:
+                            description: success
     /users:
         get:
             description: 'Load users either for a given remoteId or role'
@@ -1309,6 +1497,8 @@ mediaType: application/xml
             responses:
                 401:
                     description: 'If the user has no permission to read users'
+                200:
+                    description: success
             queryParameters:
                 roleId:
                     description: 'lists users assigned to the given role (ex: GET /user/users?roleId=/user/roles/1)'
@@ -1329,6 +1519,8 @@ mediaType: application/xml
                         description: 'If the user has no permission to read users'
                     404:
                         description: 'If the user does not exist'
+                    200:
+                        description: success
             patch:
                 description: 'Updates a user'
                 headers:
@@ -1351,6 +1543,8 @@ mediaType: application/xml
                         description: 'If the user does not exist'
                     412:
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
+                    200:
+                        description: success
             delete:
                 description: 'the given user is deleted'
                 headers: {  }
@@ -1361,6 +1555,8 @@ mediaType: application/xml
                         description: 'If the user is the same as the authenticated user'
                     404:
                         description: 'If the user does not exist'
+                    204:
+                        description: success
             /groups:
                 get:
                     description: 'Returns a list of user groups the user belongs to. The returned list includes the resources for unassigning a user group if the user is in multiple groups.'
@@ -1374,6 +1570,8 @@ mediaType: application/xml
                             description: 'If the user has no permission to read user groups'
                         404:
                             description: 'If the user does not exist'
+                        200:
+                            description: success
                 post:
                     description: 'Assigns the user to a user group'
                     headers:
@@ -1388,6 +1586,8 @@ mediaType: application/xml
                             description: 'If the new user group does not exist If the user is already in this group'
                         404:
                             description: 'If the user does not exist'
+                        200:
+                            description: success
                     queryParameters:
                         group:
                             description: 'the new parent group resource of the user'
@@ -1406,6 +1606,8 @@ mediaType: application/xml
                                 description: 'If the user is not in the given group'
                             404:
                                 description: 'If the user does not exist'
+                            200:
+                                description: success
     /roles:
         post:
             description: 'Creates a new role'
@@ -1423,6 +1625,8 @@ mediaType: application/xml
                     description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
                 401:
                     description: 'If the user is not authorized to create this role'
+                201:
+                    description: success
         get:
             description: 'Returns a list of all roles'
             headers:
@@ -1433,6 +1637,8 @@ mediaType: application/xml
             responses:
                 401:
                     description: 'If the user has no permission to read roles'
+                200:
+                    description: success
             queryParameters:
                 identifier:
                     description: 'Restricts the result to a list containing the role with the given identifier. If the role is not found an empty list is returned.'
@@ -1455,6 +1661,8 @@ mediaType: application/xml
                         description: 'If the user has no permission to read roles'
                     404:
                         description: 'If the role does not exist'
+                    200:
+                        description: success
             patch:
                 description: 'Updates a role'
                 headers:
@@ -1475,12 +1683,16 @@ mediaType: application/xml
                         description: 'If the user is not authorized to update the role'
                     412:
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
+                    200:
+                        description: success
             delete:
                 description: 'the given role and all assignments to users or user groups are deleted'
                 headers: {  }
                 responses:
                     401:
                         description: 'If the user is not authorized to delete this role'
+                    204:
+                        description: success
             /policies:
                 get:
                     description: 'loads policies for the given role'
@@ -1494,12 +1706,16 @@ mediaType: application/xml
                             description: 'If the user has no permission to read roles'
                         404:
                             description: 'If the role does not exist'
+                        200:
+                            description: success
                 delete:
                     description: 'all policies of the given role are deleted'
                     headers: {  }
                     responses:
                         401:
                             description: 'If the user is not authorized to delete this content type'
+                        204:
+                            description: success
                 '/{policyId}':
                     get:
                         description: 'loads a policy for the given module and function'
@@ -1515,6 +1731,8 @@ mediaType: application/xml
                                 description: 'If the user has no permission to read roles'
                             404:
                                 description: 'If the role or policy does not exist'
+                            200:
+                                description: success
                     patch:
                         description: 'updates a policy'
                         headers:
@@ -1537,6 +1755,8 @@ mediaType: application/xml
                                 description: 'If the role does not exist'
                             412:
                                 description: 'If the current ETag does not match with the provided one in the If-Match header'
+                            200:
+                                description: success
                     delete:
                         description: 'the given policy is deleted'
                         headers: {  }
@@ -1545,6 +1765,8 @@ mediaType: application/xml
                                 description: 'If the user is not authorized to delete this content type'
                             404:
                                 description: 'If the role or policy does not exist'
+                            204:
+                                description: success
                 post:
                     description: 'creates a policy'
                     headers:
@@ -1563,6 +1785,8 @@ mediaType: application/xml
                             description: 'If the user is not authorized to create the policy'
                         404:
                             description: 'If the role does not exist'
+                        201:
+                            description: success
     /policies:
         get:
             description: 'search all policies which are applied to a given user'
@@ -1574,6 +1798,8 @@ mediaType: application/xml
             responses:
                 401:
                     description: 'If the user has no permission to read roles'
+                200:
+                    description: success
             queryParameters:
                 userId:
                     description: 'the user id'
@@ -1593,7 +1819,9 @@ mediaType: application/xml
                     description: '(only needed for session''s checking) <sessionName>=<sessionID>'
                 x-csrf-token:
                     description: '(only needed for session''s checking) <csrfToken> The <csrfToken> needed on all unsafe http methods with session.'
-            responses: {  }
+            responses:
+                200:
+                    description: success
         '/{sessionId}':
             /refresh:
                 post:
@@ -1606,6 +1834,8 @@ mediaType: application/xml
                     responses:
                         404:
                             description: 'If the session does not exist'
+                        200:
+                            description: success
             delete:
                 description: 'The user session is removed i.e. the user is logged out.'
                 headers:
@@ -1616,3 +1846,5 @@ mediaType: application/xml
                 responses:
                     404:
                         description: 'If the session does not exist'
+                    200:
+                        description: success

@@ -46,6 +46,8 @@ function addFeature( &$resources, Feature $feature )
     $resourceProperties = ['description' => $feature->getDescription()];
     $resourceProperties['headers'] = $feature->getHeaders();
     $resourceProperties['responses'] = $feature->getErrorCodes();
+    if ( $code = $feature->getSuccessResponseCode() )
+        $resourceProperties['responses'][$code] = ['description' => 'success'];
     $queryParameters = $feature->getQueryParameters();
     if ( count( $queryParameters ) ) {
         $resourceProperties['queryParameters'] = $queryParameters;
@@ -222,6 +224,28 @@ class Feature extends ElementBase
         }
 
         return $parameters;
+    }
+
+    function getSuccessResponseCode()
+    {
+        $xpathQuery = sprintf(
+            "//div[@id='%s']/pre[@class='code http literal-block']",
+            $this->getId()
+        );
+
+        $nodeList = $this->xpath->query( $xpathQuery, $this->node );
+        if ( $nodeList->length === 0 ) {
+            return 200;
+        }
+
+        foreach ( $this->xpath->query(".//span[@class='literal number' and number(text()) = text()]", $nodeList->item( 0 ) ) as $node ) {
+            if ( $node->nodeValue == "1.1" )
+                continue;
+            $code = $node->nodeValue;
+            break;
+        }
+
+        return $code;
     }
 
     function getErrorCodes()
