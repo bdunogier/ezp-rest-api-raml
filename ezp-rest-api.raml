@@ -1,3 +1,11 @@
+#%RAML 0.8
+title: eZ Platform Content Repository
+version: v2
+
+baseUri: http://server/api/ezp/{version}
+protocols: [HTTP, HTTPS]
+mediaType: application/xml
+
 /content:
     /objects:
         post:
