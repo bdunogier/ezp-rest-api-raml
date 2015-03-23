@@ -1,1 +1,3 @@
 - [ ] Descriptions longer than X => markdown (how ? indentation ? fuck ? make it on one line, then manual
+- [ ] Handle COPY/SWAP (uses POST right now...)
+- [ ] Handle expected HTTP Response code (not in a table)
