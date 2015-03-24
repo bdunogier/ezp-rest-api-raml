@@ -1,5 +1,6 @@
 <?php
-use Symfony\Component\Yaml\Dumper;
+use Symfony\Component\Yaml\Dumper as YamlDumper;
+use Symfony\Component\Yaml\Parser as YamlParser;
 
 require 'vendor/autoload.php';
 
@@ -11,27 +12,25 @@ $doc->loadHTML( file_get_contents( 'REST-API.html' ) );
 
 $xpath = new DOMXPath( $doc );
 
-$resources = [];
+$ramlArray = [];
 
 foreach (getBooks( $xpath ) as $book) {
     if ( !in_array( $book->getId(), $coveredBooks ) ) {
         continue;
     }
-    // printf( "Book '%s' (#%s)\n", $book->getTitle(), $book->getId() );
     foreach ($book->getFeatures() as $feature) {
         if ( $feature->getResource() === 'n/a' ) {
             continue;
         }
 
-        addFeature( $resources, $feature );
+        addFeature( $ramlArray, $feature );
     }
-
-    // break;
 }
 
-$dumper = new Dumper();
+$dumper = new YamlDumper();
 
-$yaml = $dumper->dump($resources, 10);
+$yaml = $dumper->dump($ramlArray, 10);
+echo file_get_contents( 'ezp-rest-api-template.raml' );
 echo $yaml;
 
 function addFeature( &$resources, Feature $feature )
@@ -45,9 +44,23 @@ function addFeature( &$resources, Feature $feature )
     $method = $feature->getMethod();
     $resourceProperties = ['description' => $feature->getDescription()];
     $resourceProperties['headers'] = $feature->getHeaders();
+
     $resourceProperties['responses'] = $feature->getErrorCodes();
-    if ( $code = $feature->getSuccessResponseCode() )
-        $resourceProperties['responses'][$code] = ['description' => 'success'];
+    if ( $successCode = $feature->getSuccessResponseCode() )
+        $resourceProperties['responses'][$successCode] = ['description' => 'success'];
+
+    if ( isset( $resourceProperties['headers']['content-type']['enum'] ) ) {
+        foreach ( $resourceProperties['headers']['content-type']['enum'] as $contentTypeHeader ) {
+            $resourceProperties['body'][$contentTypeHeader] = null;
+        }
+    }
+
+    if ( $successCode && isset( $resourceProperties['headers']['accept']['enum'] ) ) {
+        foreach ( $resourceProperties['headers']['accept']['enum'] as $acceptHeader ) {
+            $resourceProperties['responses'][$successCode]['body'][$acceptHeader] = null;
+        }
+    }
+
     $queryParameters = $feature->getQueryParameters();
     if ( count( $queryParameters ) ) {
         $resourceProperties['queryParameters'] = $queryParameters;
@@ -252,7 +265,7 @@ class Feature extends ElementBase
     {
         $responses = [];
         $xpathQuery = sprintf(
-            "//div[@id='%s']/table//tr[th/text()='Error Codes:']/td/table/tbody/tr",
+            "//div[@id='%s']/table//tr[th/text()='Error Codes:' or th/text()='Error codes:']/td/table/tbody/tr",
             $this->getId()
         );
 

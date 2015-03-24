@@ -22,8 +22,22 @@ mediaType: application/xml
                         - application/vnd.ez.api.ContentCreate+json
                         - application/vnd.ez.api.ContentCreate+xml
             responses:
+                400:
+                    description: 'If the Input does not match the input schema definition or the validation on a field fails,'
+                401:
+                    description: 'If the user is not authorized to create this object in this location'
+                404:
+                    description: 'If a parent location in specified in the request body (see ContentCreate) and it does not exist'
                 201:
                     description: success
+                    body:
+                        application/vnd.ez.api.Content+xml: null
+                        application/vnd.ez.api.Content+json: null
+                        application/vnd.ez.api.ContentInfo+xml: null
+                        application/vnd.ez.api.ContentInfo+json: null
+            body:
+                application/vnd.ez.api.ContentCreate+json: null
+                application/vnd.ez.api.ContentCreate+xml: null
         get:
             description: 'loads the content for a given remote id'
             headers: {  }
@@ -54,6 +68,11 @@ mediaType: application/xml
                         description: 'If the ID is not found'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.Content+xml: null
+                            application/vnd.ez.api.Content+json: null
+                            application/vnd.ez.api.ContentInfo+xml: null
+                            application/vnd.ez.api.ContentInfo+json: null
                 queryParameters:
                     languages:
                         description: '(comma separated list) restricts the output of translatable fields to the given languages'
@@ -83,6 +102,12 @@ mediaType: application/xml
                         description: 'If the media-type is not one of those specified in Headers'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.ContentInfo+xml: null
+                            application/vnd.ez.api.ContentInfo+json: null
+                body:
+                    application/vnd.ez.api.ContentUpdate+json: null
+                    application/vnd.ez.api.ContentUpdate+xml: null
             delete:
                 description: 'The content is deleted. If the content has locations (which is required in 4.x) on delete all locations assigned the content object are deleted via delete subtree.'
                 headers: {  }
@@ -99,6 +124,10 @@ mediaType: application/xml
                     destination:
                         description: n/a
                 responses:
+                    401:
+                        description: 'If the user is not authorized to copy this object to the given location'
+                    404:
+                        description: 'If the source or destination resource do not exist.'
                     201:
                         description: success
             /currentversion:
@@ -126,6 +155,9 @@ mediaType: application/xml
                             description: 'If the content object was not found'
                         201:
                             description: success
+                            body:
+                                application/vnd.ez.api.Version+xml: null
+                                application/vnd.ez.api.Version+json: null
             /versions:
                 get:
                     description: 'Returns a list of all versions of the content. This method does not include fields and relations in the Version elements of the response.'
@@ -139,6 +171,9 @@ mediaType: application/xml
                             description: 'If the user has no permission to read the versions'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.VersionList+xml: null
+                                application/vnd.ez.api.VersionList+json: null
                 '/{versionNo}':
                     get:
                         description: 'Loads a specific version of a content object. This method returns fields and relations'
@@ -158,6 +193,9 @@ mediaType: application/xml
                                 description: 'If the etag does not match the current one'
                             200:
                                 description: success
+                                body:
+                                    application/vnd.ez.api.Version+xml: null
+                                    application/vnd.ez.api.Version+json: null
                         queryParameters:
                             fields:
                                 description: 'comma separated list of fields which should be returned in the response (see Content)'
@@ -191,6 +229,12 @@ mediaType: application/xml
                                 description: 'If the current ETag does not match with the provided one in the If-Match header'
                             200:
                                 description: success
+                                body:
+                                    application/vnd.ez.api.Version+xml: null
+                                    application/vnd.ez.api.Version+json: null
+                        body:
+                            application/vnd.ez.api.VersionUpdate+json: null
+                            application/vnd.ez.api.VersionUpdate+xml: null
                         queryParameters:
                             languages:
                                 description: '(comma separated list) restricts the output of translatable fields to the given languages'
@@ -231,6 +275,7 @@ mediaType: application/xml
                                     description: 'If the content object was not found'
                                 200:
                                     description: success
+                                    body: { application/vnd.ez.api.RelationList+xml: null, application/vnd.ez.api.RelationList+json: null }
                             queryParameters:
                                 offset:
                                     description: 'the offset of the result set'
@@ -244,7 +289,7 @@ mediaType: application/xml
                                 responses:
                                     404: { description: 'If the object with the given id or the relation does not exist' }
                                     401: { description: 'If the user is not authorized to read this object' }
-                                    200: { description: success }
+                                    200: { description: success, body: { application/vnd.ez.api.Relation+xml: null, application/vnd.ez.api.Relation+json: null } }
                             delete:
                                 description: 'Deletes a relation of the given draft.'
                                 headers: {  }
@@ -269,6 +314,10 @@ mediaType: application/xml
                                     description: 'If the object or version with the given id does not exist'
                                 201:
                                     description: success
+                                    body: { application/vnd.ez.api.Relation+xml: null, application/vnd.ez.api.Relation+json: null }
+                            body:
+                                application/vnd.ez.api.RelationCreate+xml: null
+                                application/vnd.ez.api.RelationCreate+json: null
             /relations:
                 get:
                     description: 'redirects to the relations of the current version'
@@ -297,6 +346,12 @@ mediaType: application/xml
                             description: 'If a location under the given parent id already exists'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.Location+xml: null
+                                application/vnd.ez.api.Location+json: null
+                    body:
+                        application/vnd.ez.api.LocationCreate+json: null
+                        application/vnd.ez.api.LocationCreate+xml: null
                 get:
                     description: 'loads all locations for the given content object'
                     headers:
@@ -313,6 +368,9 @@ mediaType: application/xml
                             description: 'If the user is not authorized to read this object'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.LocationList+xml: null
+                                application/vnd.ez.api.LocationList+json: null
             /objectstates:
                 get:
                     description: 'Returns the object states of content'
@@ -326,6 +384,9 @@ mediaType: application/xml
                     responses:
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.ContentObjectStates+xml: null
+                                application/vnd.ez.api.ContentObjectStates+json: null
                 patch:
                     description: 'Updates object states of content. An object state in the input overrides the state of the object state group.'
                     headers:
@@ -342,6 +403,12 @@ mediaType: application/xml
                     responses:
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.ContentObjectStates+xml: null
+                                application/vnd.ez.api.ContentObjectStates+json: null
+                    body:
+                        application/vnd.ez.api.ContentObjectStates+json: null
+                        application/vnd.ez.api.ContentObjectStates+xml: null
     /binary:
         /images:
             '/{imageId}':
@@ -361,6 +428,10 @@ mediaType: application/xml
                                     description: 'If the user is not authorized to read this object'
                                 200:
                                     description: success
+                                    body: { application/vnd.ez.api.ImageVariation+xml: null, application/vnd.ez.api.ImageVariation+json: null }
+                            body:
+                                application/vnd.ez.api.ImageVariation+xml: null
+                                application/vnd.ez.api.ImageVariation+json: null
     /locations:
         get:
             description: 'loads the location for a given id (x)or remote id'
@@ -392,6 +463,9 @@ mediaType: application/xml
                         description: 'If the user is not authorized to read this location'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.Location+xml: null
+                            application/vnd.ez.api.Location+json: null
             /children:
                 get:
                     description: 'loads all child locations for the given parent location'
@@ -407,6 +481,9 @@ mediaType: application/xml
                             description: 'If the user is not authorized to read this object'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.LocationList+xml: null
+                                application/vnd.ez.api.LocationList+json: null
                     queryParameters:
                         offset:
                             description: 'the offset of the result set'
@@ -447,6 +524,9 @@ mediaType: application/xml
                             description: 'If the location was not found'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.UrlAliasRefList+xml: null
+                                application/vnd.ez.api.UrlAliasRefList+json: null
                     queryParameters:
                         custom:
                             description: '(default true) this flag indicates whether autogenerated (false) or manual url aliases (true) should be returned.'
@@ -471,6 +551,12 @@ mediaType: application/xml
                         description: 'If the user is not authorized to update this location'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.Location+xml: null
+                            application/vnd.ez.api.Location+json: null
+                body:
+                    application/vnd.ez.api.LocationUpdate+json: null
+                    application/vnd.ez.api.LocationUpdate+xml: null
             post:
                 description: 'Swaps the content of the location with the content of the given location'
                 headers:
@@ -496,8 +582,16 @@ mediaType: application/xml
                         - application/vnd.ez.api.ViewInput+xml
                         - application/vnd.ez.api.ViewInput+json
             responses:
+                400:
+                    description: 'If the Input does not match the input schema definition, In this case the response contains an ErrorMessage'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.View+xml: null
+                        application/vnd.ez.api.View+json: null
+            body:
+                application/vnd.ez.api.ViewInput+xml: null
+                application/vnd.ez.api.ViewInput+json: null
         get:
             description: 'Returns a list of view uris. The list includes public view and private view of the authenticated user.'
             headers:
@@ -508,6 +602,9 @@ mediaType: application/xml
             responses:
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.RefList+xml: null
+                        application/vnd.ez.api.RefList+json: null
         '/{viewIdentifier}':
             get:
                 description: 'Returns the view'
@@ -521,6 +618,9 @@ mediaType: application/xml
                         description: 'if the view is not public and from another user'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.View+xml: null
+                            application/vnd.ez.api.View+json: null
             /results:
                 get:
                     description: 'Returns result of the view'
@@ -534,6 +634,9 @@ mediaType: application/xml
                             description: 'if the view is not public and from another user'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.ViewResult+xml: null
+                                application/vnd.ez.api.ViewResult+json: null
             delete:
                 description: 'the given view is deleted'
                 headers: {  }
@@ -565,6 +668,12 @@ mediaType: application/xml
                     description: 'If a section with same identifier already exists'
                 201:
                     description: success
+                    body:
+                        application/vnd.ez.api.Section+xml: null
+                        application/vnd.ez.api.Section+json: null
+            body:
+                application/vnd.ez.api.SectionInput+json: null
+                application/vnd.ez.api.SectionInput+xml: null
         get:
             description: 'Returns a list of all sections'
             headers:
@@ -579,6 +688,9 @@ mediaType: application/xml
                     description: 'If the user has no permission to read the sections'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.SectionList+xml: null
+                        application/vnd.ez.api.SectionList+json: null
             queryParameters:
                 identifer:
                     description: 'only the section with the given identifier is returned.'
@@ -595,6 +707,9 @@ mediaType: application/xml
                 responses:
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.Section+xml: null
+                            application/vnd.ez.api.Section+json: null
             patch:
                 description: 'Updates a section'
                 headers:
@@ -611,6 +726,12 @@ mediaType: application/xml
                 responses:
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.Section+xml: null
+                            application/vnd.ez.api.Section+json: null
+                body:
+                    application/vnd.ez.api.SectionInput+json: null
+                    application/vnd.ez.api.SectionInput+xml: null
             delete:
                 description: 'the given section is deleted'
                 headers:
@@ -625,6 +746,9 @@ mediaType: application/xml
                         description: 'If the section does not exist'
                     204:
                         description: success
+                        body:
+                            application/vnd.ez.api.ErrorMessage+xml: null
+                            application/vnd.ez.api.ErrorMessage+json: null
     /trash:
         get:
             description: 'Returns a list of all trash items'
@@ -636,6 +760,9 @@ mediaType: application/xml
             responses:
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.Trash+xml: null
+                        application/vnd.ez.api.Trash+json: null
             queryParameters:
                 limit:
                     description: 'only <limit> items will be returned started by offset'
@@ -656,6 +783,9 @@ mediaType: application/xml
                         description: 'If the trash item with the given id does not exist'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.TrashItem+xml: null
+                            application/vnd.ez.api.TrashItem+json: null
             post:
                 description: 'Restores a trashItem'
                 headers:
@@ -711,6 +841,12 @@ mediaType: application/xml
                     description: 'If a object state group with same identifier already exists'
                 201:
                     description: success
+                    body:
+                        application/vnd.ez.api.ObjectStateGroup+xml: null
+                        application/vnd.ez.api.ObjectStateGroup+json: null
+            body:
+                application/vnd.ez.api.ObjectStateGroupCreate+json: null
+                application/vnd.ez.api.ObjectStateGroupCreate+xml: null
         get:
             description: 'Returns a list of all object state groups'
             headers:
@@ -725,6 +861,9 @@ mediaType: application/xml
                     description: 'If the user has no permission to read object state groups'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.ObjectStateGroupList+xml: null
+                        application/vnd.ez.api.ObjectStateGroupList+json: null
         '/{objectStateGroupId}':
             get:
                 description: 'Returns the object state group given by id'
@@ -738,6 +877,9 @@ mediaType: application/xml
                 responses:
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.ObjectStateGroup+xml: null
+                            application/vnd.ez.api.ObjectStateGroup+json: null
             patch:
                 description: 'Updates an object state group'
                 headers:
@@ -754,6 +896,12 @@ mediaType: application/xml
                 responses:
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.ObjectStateGroup+xml: null
+                            application/vnd.ez.api.ObjectStateGroup+json: null
+                body:
+                    application/vnd.ez.api.ObjectStateGroupUpdate+json: null
+                    application/vnd.ez.api.ObjectStateGroupUpdate+xml: null
             delete:
                 description: 'the given object state group including the object states is deleted'
                 headers: {  }
@@ -785,6 +933,12 @@ mediaType: application/xml
                             description: 'If a object state with same identifier already exists in the given group'
                         201:
                             description: success
+                            body:
+                                application/vnd.ez.api.ObjectState+xml: null
+                                application/vnd.ez.api.ObjectState+json: null
+                    body:
+                        application/vnd.ez.api.ObjectStateGroupCreate+json: null
+                        application/vnd.ez.api.ObjectStateGroupCreate+xml: null
                 get:
                     description: 'Returns a list of all object states of the given group'
                     headers:
@@ -799,6 +953,9 @@ mediaType: application/xml
                             description: 'If the user has no permission to read object states'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.ObjectStateList+xml: null
+                                application/vnd.ez.api.ObjectStateList+json: null
                 '/{objectStateId}':
                     get:
                         description: 'Returns the object state'
@@ -812,6 +969,9 @@ mediaType: application/xml
                         responses:
                             200:
                                 description: success
+                                body:
+                                    application/vnd.ez.api.ObjectState+xml: null
+                                    application/vnd.ez.api.ObjectState+json: null
                     patch:
                         description: 'Updates an object state'
                         headers:
@@ -828,6 +988,12 @@ mediaType: application/xml
                         responses:
                             200:
                                 description: success
+                                body:
+                                    application/vnd.ez.api.ObjectState+xml: null
+                                    application/vnd.ez.api.ObjectState+json: null
+                        body:
+                            application/vnd.ez.api.ObjectStateUpdate+json: null
+                            application/vnd.ez.api.ObjectStateUpdate+xml: null
                     delete:
                         description: 'the given object state is deleted'
                         headers: {  }
@@ -859,6 +1025,12 @@ mediaType: application/xml
                     description: 'If an url alias same identifier already exists'
                 201:
                     description: success
+                    body:
+                        application/vnd.ez.api.UrlAlias+xml: null
+                        application/vnd.ez.api.UrlAlias+json: null
+            body:
+                application/vnd.ez.api.UrlAliasCreate+json: null
+                application/vnd.ez.api.UrlAliasCreate+xml: null
         get:
             description: 'Returns the list of url global aliases'
             headers:
@@ -871,6 +1043,9 @@ mediaType: application/xml
                     description: 'If the user has no permission to read urlaliases'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.UrlAliasRefList+xml: null
+                        application/vnd.ez.api.UrlAliasRefList+json: null
         '/{urlAliasId}':
             get:
                 description: 'Returns the urlalias with the given id'
@@ -882,6 +1057,9 @@ mediaType: application/xml
                 responses:
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.UrlAlias+xml: null
+                            application/vnd.ez.api.UrlAlias+json: null
             delete:
                 description: 'the given url alias is deleted'
                 headers: {  }
@@ -913,6 +1091,12 @@ mediaType: application/xml
                     description: 'If an url wildcardsame identifier already exists'
                 201:
                     description: success
+                    body:
+                        application/vnd.ez.api.UrlWildcard+xml: null
+                        application/vnd.ez.api.UrlWildcard+json: null
+            body:
+                application/vnd.ez.api.UrlWildcardCreate+json: null
+                application/vnd.ez.api.UrlWildcardCreate+xml: null
         get:
             description: 'Returns a list of url wildcards'
             headers:
@@ -925,6 +1109,9 @@ mediaType: application/xml
                     description: 'If the user has no permission to read urlwildcards'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.UrlWildcardList+xml: null
+                        application/vnd.ez.api.UrlWildcardList+json: null
         '/{urlWildcardId}':
             get:
                 description: 'Returns the urlwildcard with the given id'
@@ -936,6 +1123,9 @@ mediaType: application/xml
                 responses:
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.UrlWildcard+xml: null
+                            application/vnd.ez.api.UrlWildcard+json: null
             delete:
                 description: 'the given url wildcard is deleted'
                 headers: {  }
@@ -967,6 +1157,12 @@ mediaType: application/xml
                     description: 'If a content type group with same identifier already exists'
                 201:
                     description: success
+                    body:
+                        application/vnd.ez.api.ContentTypeGroup+xml: null
+                        application/vnd.ez.api.ContentTypeGroup+json: null
+            body:
+                application/vnd.ez.api.ContentTypeGroupInput+json: null
+                application/vnd.ez.api.ContentTypeGroupInput+xml: null
         get:
             description: 'loads the content type group for a given identifier'
             headers: {  }
@@ -991,6 +1187,9 @@ mediaType: application/xml
                 responses:
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.ContentTypeGroup+xml: null
+                            application/vnd.ez.api.ContentTypeGroup+json: null
             patch:
                 description: 'Updates a content type group'
                 headers:
@@ -1015,6 +1214,12 @@ mediaType: application/xml
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.ContentTypeGroup+xml: null
+                            application/vnd.ez.api.ContentTypeGroup+json: null
+                body:
+                    application/vnd.ez.api.ContentTypeGroupInput+json: null
+                    application/vnd.ez.api.ContentTypeGroupInput+xml: null
             delete:
                 description: 'the given content type group is deleted'
                 headers: {  }
@@ -1042,6 +1247,11 @@ mediaType: application/xml
                             description: 'If the user has no permission to read the content types'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.ContentTypeInfoList+xml: null
+                                application/vnd.ez.api.ContentTypeInfoList+json: null
+                                application/vnd.ez.api.ContentTypeList+xml: null
+                                application/vnd.ez.api.ContentTypeList+json: null
                 post:
                     description: 'Creates a new content type draft in the given content type group'
                     headers:
@@ -1062,6 +1272,12 @@ mediaType: application/xml
                             description: 'If a content type with same identifier already exists'
                         201:
                             description: success
+                            body:
+                                application/vnd.ez.api.ContentType+xml: null
+                                application/vnd.ez.api.ContentType+json: null
+                    body:
+                        application/vnd.ez.api.ContentTypeCreate+json: null
+                        application/vnd.ez.api.ContentTypeCreate+xml: null
                     queryParameters:
                         publish:
                             description: '(default false) If true the content type is published after creating'
@@ -1087,6 +1303,12 @@ mediaType: application/xml
                         description: 'If a content type with the given new identifier already exists. If there exists already a draft.'
                     201:
                         description: success
+                        body:
+                            application/vnd.ez.api.ContentTypeInfo+xml: null
+                            application/vnd.ez.api.ContentTypeInfo+json: null
+                body:
+                    application/vnd.ez.api.ContentTypeUpdate+json: null
+                    application/vnd.ez.api.ContentTypeUpdate+xml: null
             get:
                 description: 'Returns the content type given by id'
                 headers:
@@ -1099,6 +1321,9 @@ mediaType: application/xml
                 responses:
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.ContentType+xml: null
+                            application/vnd.ez.api.ContentType+json: null
             /draft:
                 patch:
                     description: 'Updates meta data of a draft. This method does not handle field definitions'
@@ -1122,6 +1347,12 @@ mediaType: application/xml
                             description: 'If there is no draft on this content type'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.ContentTypeInfo+xml: null
+                                application/vnd.ez.api.ContentTypeInfo+json: null
+                    body:
+                        application/vnd.ez.api.ContentTypeUpdate+json: null
+                        application/vnd.ez.api.ContentTypeUpdate+xml: null
                 /fielddefinitions:
                     post:
                         description: 'Creates a new field definition for the given content type'
@@ -1143,6 +1374,12 @@ mediaType: application/xml
                                 description: 'If a field definition with same identifier already exists in the given content type If the field definition is of singular type, already existing in the given content type If the field definition of the type that can''t be added to a content type that already has content instances is being added to such content type'
                             201:
                                 description: success
+                                body:
+                                    application/vnd.ez.api.FieldDefinition+xml: null
+                                    application/vnd.ez.api.FieldDefinition+json: null
+                        body:
+                            application/vnd.ez.api.FieldDefinitionCreate+json: null
+                            application/vnd.ez.api.FieldDefinitionCreate+xml: null
                     /<ID>:
                         get:
                             description: 'Returns the field definition given by id'
@@ -1152,6 +1389,7 @@ mediaType: application/xml
                             responses:
                                 200:
                                     description: success
+                                    body: { application/vnd.ez.api.FieldDefinition+xml: null, application/vnd.ez.api.FieldDefinition+json: null }
                         put:
                             description: 'Updates the attributes of a field definitions'
                             headers:
@@ -1168,6 +1406,10 @@ mediaType: application/xml
                                     description: 'If a field definition with the given new identifier already exists in the given content type.'
                                 200:
                                     description: success
+                                    body: { application/vnd.ez.api.FieldDefinition+xml: null, application/vnd.ez.api.FieldDefinition+json: null }
+                            body:
+                                application/vnd.ez.api.FieldDefinitionUpdate+json: null
+                                application/vnd.ez.api.FieldDefinitionUpdate+xml: null
                         delete:
                             description: 'the given field definition is deleted'
                             headers: {  }
@@ -1229,6 +1471,9 @@ mediaType: application/xml
                             description: 'If the content type is already assigned to the group'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.ContentTypeGroupRefList+xml: null
+                                application/vnd.ez.api.ContentTypeGroupRefList+json: null
                     queryParameters:
                         group:
                             description: '(uri) the uri of the group to which the content type should be linked'
@@ -1246,6 +1491,11 @@ mediaType: application/xml
                     description: 'If the user has no permission to read the content types'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.ContentTypeInfoList+xml: null
+                        application/vnd.ez.api.ContentTypeInfoList+json: null
+                        application/vnd.ez.api.ContentTypeList+xml: null
+                        application/vnd.ez.api.ContentTypeList+json: null
             queryParameters:
                 identifier:
                     description: 'retrieves the content type for the given identifer'
@@ -1272,6 +1522,9 @@ mediaType: application/xml
                     responses:
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.ContentTypeGroupRefList+xml: null
+                                application/vnd.ez.api.ContentTypeGroupRefList+json: null
                 '/{contentTypeGroupId}':
                     delete:
                         description: 'removes the given group from the content type and returns the updated group list'
@@ -1289,6 +1542,9 @@ mediaType: application/xml
                                 description: 'If the resource does not exist'
                             200:
                                 description: success
+                                body:
+                                    application/vnd.ez.api.ContentTypeGroupRefList+xml: null
+                                    application/vnd.ez.api.ContentTypeGroupRefList+json: null
 /user:
     /groups:
         /root:
@@ -1315,6 +1571,9 @@ mediaType: application/xml
                         description: 'If the user group does not exist'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.UserGroup+xml: null
+                            application/vnd.ez.api.UserGroup+json: null
             /subgroups:
                 post:
                     description: 'Creates a new user group under the given parent. To create a top level group use /user/groups/subgroups'
@@ -1334,6 +1593,12 @@ mediaType: application/xml
                             description: 'If the user is not authorized to create this user group'
                         201:
                             description: success
+                            body:
+                                application/vnd.ez.api.UserGroup+xml: null
+                                application/vnd.ez.api.UserGroup+json: null
+                    body:
+                        application/vnd.ez.api.UserGroupCreate+json: null
+                        application/vnd.ez.api.UserGroupCreate+xml: null
             patch:
                 description: 'Updates a user group'
                 headers:
@@ -1356,6 +1621,12 @@ mediaType: application/xml
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.UserGroup+xml: null
+                            application/vnd.ez.api.UserGroup+json: null
+                body:
+                    application/vnd.ez.api.UserGroupUpdate+json: null
+                    application/vnd.ez.api.UserGroupUpdate+xml: null
             delete:
                 description: 'the given user group is deleted'
                 headers: {  }
@@ -1403,6 +1674,12 @@ mediaType: application/xml
                             description: 'If the group with the given ID does not exist'
                         201:
                             description: success
+                            body:
+                                application/vnd.ez.api.User+xml: null
+                                application/vnd.ez.api.User+json: null
+                    body:
+                        application/vnd.ez.api.UserCreate+json: null
+                        application/vnd.ez.api.UserCreate+xml: null
             '/roles for user group ':
                 /user:
                     /users:
@@ -1411,18 +1688,19 @@ mediaType: application/xml
                                 get:
                                     description: 'Returns a list of all roles assigned to the given user group'
                                     headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] } }
-                                    responses: { 401: { description: 'If the user has no permission to read roles' }, 200: { description: success } }
+                                    responses: { 401: { description: 'If the user has no permission to read roles' }, 200: { description: success, body: { application/vnd.ez.api.RoleAssignmentList+xml: null, application/vnd.ez.api.RoleAssignmentList+json: null } } }
                                 post:
                                     description: 'assign a role to a user or user group.'
                                     headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] }, content-type: { enum: [application/vnd.ez.api.RoleAssignInput+json, application/vnd.ez.api.RoleAssignInput+xml] } }
-                                    responses: { 400: { description: 'If validation of limitation in RoleAssignInput fails' }, 401: { description: 'If the user is not authorized to assign this role' }, 200: { description: success } }
+                                    responses: { 400: { description: 'If validation of limitation in RoleAssignInput fails' }, 401: { description: 'If the user is not authorized to assign this role' }, 200: { description: success, body: { application/vnd.ez.api.RoleAssignmentList+xml: null, application/vnd.ez.api.RoleAssignmentList+json: null } } }
+                                    body: { application/vnd.ez.api.RoleAssignInput+json: null, application/vnd.ez.api.RoleAssignInput+xml: null }
             /roles:
                 '/{roleId} for user group ':
                     /user:
                         /users:
                             '/{userId}':
                                 /roles:
-                                    '/{roleId} for user': { get: { description: 'Returns a roleassignment to the given user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignment+xml, application/vnd.ez.api.RoleAssignment+json] } }, responses: { 401: { description: 'If the user has no permission to read roles' }, 200: { description: success } } }, delete: { description: 'the given role is removed from the user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] } }, responses: { 401: { description: 'If the user is not authorized to delete this content type' }, 200: { description: success } } } }
+                                    '/{roleId} for user': { get: { description: 'Returns a roleassignment to the given user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignment+xml, application/vnd.ez.api.RoleAssignment+json] } }, responses: { 401: { description: 'If the user has no permission to read roles' }, 200: { description: success, body: { application/vnd.ez.api.RoleAssignment+xml: null, application/vnd.ez.api.RoleAssignment+json: null } } } }, delete: { description: 'the given role is removed from the user or user group', headers: { accept: { enum: [application/vnd.ez.api.RoleAssignmentList+xml, application/vnd.ez.api.RoleAssignmentList+json] } }, responses: { 401: { description: 'If the user is not authorized to delete this content type' }, 200: { description: success, body: { application/vnd.ez.api.RoleAssignmentList+xml: null, application/vnd.ez.api.RoleAssignmentList+json: null } } } } }
         get:
             description: 'Load user groups for either an id or remoteId or role.'
             headers:
@@ -1437,6 +1715,11 @@ mediaType: application/xml
                     description: 'If the user has no permission to read user groups'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.UserGroupList+xml: null
+                        application/vnd.ez.api.UserGroupList+json: null
+                        application/vnd.ez.api.UserGroupRefList+xml: null
+                        application/vnd.ez.api.UserGroupRefList+json: null
             queryParameters:
                 roleId:
                     description: 'lists user groups assigned to the given role'
@@ -1462,6 +1745,11 @@ mediaType: application/xml
                             description: 'If the user group does not exist'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.UserList+xml: null
+                                application/vnd.ez.api.UserList+json: null
+                                application/vnd.ez.api.UserRefList+xml: null
+                                application/vnd.ez.api.UserRefList+json: null
                     queryParameters:
                         limit:
                             description: 'only <limit> items will be returned started by offset'
@@ -1484,6 +1772,11 @@ mediaType: application/xml
                             description: 'If the user group does not exist'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.UserGroupList+xml: null
+                                application/vnd.ez.api.UserGroupList+json: null
+                                application/vnd.ez.api.UserGroupRefList+xml: null
+                                application/vnd.ez.api.UserGroupRefList+json: null
     /users:
         get:
             description: 'Load users either for a given remoteId or role'
@@ -1499,6 +1792,11 @@ mediaType: application/xml
                     description: 'If the user has no permission to read users'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.UserList+xml: null
+                        application/vnd.ez.api.UserList+json: null
+                        application/vnd.ez.api.UserRefList+xml: null
+                        application/vnd.ez.api.UserRefList+json: null
             queryParameters:
                 roleId:
                     description: 'lists users assigned to the given role (ex: GET /user/users?roleId=/user/roles/1)'
@@ -1521,6 +1819,9 @@ mediaType: application/xml
                         description: 'If the user does not exist'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.User+xml: null
+                            application/vnd.ez.api.User+json: null
             patch:
                 description: 'Updates a user'
                 headers:
@@ -1545,6 +1846,12 @@ mediaType: application/xml
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.User+xml: null
+                            application/vnd.ez.api.User+json: null
+                body:
+                    application/vnd.ez.api.UserUpdate+json: null
+                    application/vnd.ez.api.UserUpdate+xml: null
             delete:
                 description: 'the given user is deleted'
                 headers: {  }
@@ -1572,6 +1879,9 @@ mediaType: application/xml
                             description: 'If the user does not exist'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.UserGroupRefList+xml: null
+                                application/vnd.ez.api.UserGroupRefList+json: null
                 post:
                     description: 'Assigns the user to a user group'
                     headers:
@@ -1588,6 +1898,9 @@ mediaType: application/xml
                             description: 'If the user does not exist'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.UserGroupRefList+xml: null
+                                application/vnd.ez.api.UserGroupRefList+json: null
                     queryParameters:
                         group:
                             description: 'the new parent group resource of the user'
@@ -1608,6 +1921,9 @@ mediaType: application/xml
                                 description: 'If the user does not exist'
                             200:
                                 description: success
+                                body:
+                                    application/vnd.ez.api.UserGroupRefList+xml: null
+                                    application/vnd.ez.api.UserGroupRefList+json: null
     /roles:
         post:
             description: 'Creates a new role'
@@ -1627,6 +1943,12 @@ mediaType: application/xml
                     description: 'If the user is not authorized to create this role'
                 201:
                     description: success
+                    body:
+                        application/vnd.ez.api.Role+xml: null
+                        application/vnd.ez.api.Role+json: null
+            body:
+                application/vnd.ez.api.RoleInput+json: null
+                application/vnd.ez.api.RoleInput+xml: null
         get:
             description: 'Returns a list of all roles'
             headers:
@@ -1639,6 +1961,9 @@ mediaType: application/xml
                     description: 'If the user has no permission to read roles'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.RoleList+xml: null
+                        application/vnd.ez.api.RoleList+json: null
             queryParameters:
                 identifier:
                     description: 'Restricts the result to a list containing the role with the given identifier. If the role is not found an empty list is returned.'
@@ -1663,6 +1988,9 @@ mediaType: application/xml
                         description: 'If the role does not exist'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.Role+xml: null
+                            application/vnd.ez.api.Role+json: null
             patch:
                 description: 'Updates a role'
                 headers:
@@ -1685,6 +2013,12 @@ mediaType: application/xml
                         description: 'If the current ETag does not match with the provided one in the If-Match header'
                     200:
                         description: success
+                        body:
+                            application/vnd.ez.api.Role+xml: null
+                            application/vnd.ez.api.Role+json: null
+                body:
+                    application/vnd.ez.api.RoleInput+json: null
+                    application/vnd.ez.api.RoleInput+xml: null
             delete:
                 description: 'the given role and all assignments to users or user groups are deleted'
                 headers: {  }
@@ -1708,6 +2042,9 @@ mediaType: application/xml
                             description: 'If the role does not exist'
                         200:
                             description: success
+                            body:
+                                application/vnd.ez.api.PolicyList+xml: null
+                                application/vnd.ez.api.PolicyList+json: null
                 delete:
                     description: 'all policies of the given role are deleted'
                     headers: {  }
@@ -1733,6 +2070,9 @@ mediaType: application/xml
                                 description: 'If the role or policy does not exist'
                             200:
                                 description: success
+                                body:
+                                    application/vnd.ez.api.Policy+xml: null
+                                    application/vnd.ez.api.Policy+json: null
                     patch:
                         description: 'updates a policy'
                         headers:
@@ -1757,6 +2097,12 @@ mediaType: application/xml
                                 description: 'If the current ETag does not match with the provided one in the If-Match header'
                             200:
                                 description: success
+                                body:
+                                    application/vnd.ez.api.Policy+xml: null
+                                    application/vnd.ez.api.Policy+json: null
+                        body:
+                            application/vnd.ez.api.PolicyUpdate+xml: null
+                            application/vnd.ez.api.PolicyUpdate+json: null
                     delete:
                         description: 'the given policy is deleted'
                         headers: {  }
@@ -1787,6 +2133,12 @@ mediaType: application/xml
                             description: 'If the role does not exist'
                         201:
                             description: success
+                            body:
+                                application/vnd.ez.api.Policy+xml: null
+                                application/vnd.ez.api.Policy+json: null
+                    body:
+                        application/vnd.ez.api.PolicyCreate+xml: null
+                        application/vnd.ez.api.PolicyCreate+json: null
     /policies:
         get:
             description: 'search all policies which are applied to a given user'
@@ -1800,6 +2152,9 @@ mediaType: application/xml
                     description: 'If the user has no permission to read roles'
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.PolicyList+xml: null
+                        application/vnd.ez.api.PolicyList+json: null
             queryParameters:
                 userId:
                     description: 'the user id'
@@ -1822,6 +2177,13 @@ mediaType: application/xml
             responses:
                 200:
                     description: success
+                    body:
+                        application/vnd.ez.api.Session+xml: null
+                        application/vnd.ez.api.Session+json: null
+            body:
+                application/vnd.ez.api.SessionInput+xml: null
+                application/vnd.ez.api.SessionInput+json:
+                    schema: SessionInput
         '/{sessionId}':
             /refresh:
                 post:
