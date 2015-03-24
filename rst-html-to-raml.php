@@ -49,15 +49,17 @@ function addFeature( &$resources, Feature $feature )
     if ( $successCode = $feature->getSuccessResponseCode() )
         $resourceProperties['responses'][$successCode] = ['description' => 'success'];
 
+    // add request body content types
     if ( isset( $resourceProperties['headers']['content-type']['enum'] ) ) {
         foreach ( $resourceProperties['headers']['content-type']['enum'] as $contentTypeHeader ) {
-            $resourceProperties['body'][$contentTypeHeader] = null;
+            $resourceProperties['body'][$contentTypeHeader] = getSchema( $contentTypeHeader );
         }
     }
 
+    // add response body content types upon success
     if ( $successCode && isset( $resourceProperties['headers']['accept']['enum'] ) ) {
         foreach ( $resourceProperties['headers']['accept']['enum'] as $acceptHeader ) {
-            $resourceProperties['responses'][$successCode]['body'][$acceptHeader] = null;
+            $resourceProperties['responses'][$successCode]['body'][$acceptHeader] = getSchema( $acceptHeader );
         }
     }
 
@@ -382,10 +384,16 @@ abstract class ElementBase
     }
 }
 
-class Headers extends ElementBase
+function getSchema( $contentType )
 {
-    protected function getId()
-    {
-        // TODO: Implement getId() method.
+    list( $mediaType, $type,) = explode( '+', $contentType );
+    if (
+        $type === 'xml' &&
+        sscanf( $mediaType, 'application/vnd.ez.api.%s', $type ) &&
+        file_exists( "schemas/xsd/$type.xsd" )
+    ) {
+        return ['schema' => $type];
     }
+
+    return null;
 }

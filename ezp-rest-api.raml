@@ -2,9 +2,55 @@
 title: eZ Platform Content Repository
 version: v2
 
-baseUri: http://server/api/ezp/{version}
+baseUri: http://{host}/api/ezp/v2
 protocols: [HTTP, HTTPS]
 mediaType: application/xml
+
+schemas:
+    - BinaryInput: !include schemas/xsd/BinaryInput.xsd
+    - CommonDefinitions: !include schemas/xsd/CommonDefinitions.xsd
+    - ContentCreate: !include schemas/xsd/ContentCreate.xsd
+    - ContentObjectState: !include schemas/xsd/ContentObjectState.xsd
+    - ContentTypeCreate: !include schemas/xsd/ContentTypeCreate.xsd
+    - ContentTypeGroup: !include schemas/xsd/ContentTypeGroup.xsd
+    - ContentTypeUpdate: !include schemas/xsd/ContentTypeUpdate.xsd
+    - ContentType: !include schemas/xsd/ContentType.xsd
+    - ContentUpdate: !include schemas/xsd/ContentUpdate.xsd
+    - Content: !include schemas/xsd/Content.xsd
+    - ErrorMessage: !include schemas/xsd/ErrorMessage.xsd
+    - FieldDefinitionCreate: !include schemas/xsd/FieldDefinitionCreate.xsd
+    - FieldDefinitionUpdate: !include schemas/xsd/FieldDefinitionUpdate.xsd
+    - FieldDefinition: !include schemas/xsd/FieldDefinition.xsd
+    - FieldValue: !include schemas/xsd/FieldValue.xsd
+    - Limitation: !include schemas/xsd/Limitation.xsd
+    - LocationCreate: !include schemas/xsd/LocationCreate.xsd
+    - LocationUpdate: !include schemas/xsd/LocationUpdate.xsd
+    - Location: !include schemas/xsd/Location.xsd
+    - ObjectRelation: !include schemas/xsd/ObjectRelation.xsd
+    - ObjectStateGroup: !include schemas/xsd/ObjectStateGroup.xsd
+    - ObjectState: !include schemas/xsd/ObjectState.xsd
+    - Policy: !include schemas/xsd/Policy.xsd
+    - Relation: !include schemas/xsd/Relation.xsd
+    - Role: !include schemas/xsd/Role.xsd
+    - Root: !include schemas/xsd/Root.xsd
+    - Section: !include schemas/xsd/Section.xsd
+    - SessionInput: !include schemas/xsd/SessionInput.xsd
+    - Session: !include schemas/xsd/Session.xsd
+    - StringTypes: !include schemas/xsd/StringTypes.xsd
+    - Trash: !include schemas/xsd/Trash.xsd
+    - UrlAlias: !include schemas/xsd/UrlAlias.xsd
+    - UrlWildcard: !include schemas/xsd/UrlWildcard.xsd
+    - UserCreate: !include schemas/xsd/UserCreate.xsd
+    - UserGroupCreate: !include schemas/xsd/UserGroupCreate.xsd
+    - UserGroupUpdate: !include schemas/xsd/UserGroupUpdate.xsd
+    - UserGroup: !include schemas/xsd/UserGroup.xsd
+    - UserUpdate: !include schemas/xsd/UserUpdate.xsd
+    - User: !include schemas/xsd/User.xsd
+    - VersionInfo: !include schemas/xsd/VersionInfo.xsd
+    - VersionList: !include schemas/xsd/VersionList.xsd
+    - VersionUpdate: !include schemas/xsd/VersionUpdate.xsd
+    - Version: !include schemas/xsd/Version.xsd
+    - View: !include schemas/xsd/View.xsd
 
 /content:
     /objects:
@@ -31,13 +77,15 @@ mediaType: application/xml
                 201:
                     description: success
                     body:
-                        application/vnd.ez.api.Content+xml: null
+                        application/vnd.ez.api.Content+xml:
+                            schema: Content
                         application/vnd.ez.api.Content+json: null
                         application/vnd.ez.api.ContentInfo+xml: null
                         application/vnd.ez.api.ContentInfo+json: null
             body:
                 application/vnd.ez.api.ContentCreate+json: null
-                application/vnd.ez.api.ContentCreate+xml: null
+                application/vnd.ez.api.ContentCreate+xml:
+                    schema: ContentCreate
         get:
             description: 'loads the content for a given remote id'
             headers: {  }
@@ -69,7 +117,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.Content+xml: null
+                            application/vnd.ez.api.Content+xml:
+                                schema: Content
                             application/vnd.ez.api.Content+json: null
                             application/vnd.ez.api.ContentInfo+xml: null
                             application/vnd.ez.api.ContentInfo+json: null
@@ -107,7 +156,8 @@ mediaType: application/xml
                             application/vnd.ez.api.ContentInfo+json: null
                 body:
                     application/vnd.ez.api.ContentUpdate+json: null
-                    application/vnd.ez.api.ContentUpdate+xml: null
+                    application/vnd.ez.api.ContentUpdate+xml:
+                        schema: ContentUpdate
             delete:
                 description: 'The content is deleted. If the content has locations (which is required in 4.x) on delete all locations assigned the content object are deleted via delete subtree.'
                 headers: {  }
@@ -156,7 +206,8 @@ mediaType: application/xml
                         201:
                             description: success
                             body:
-                                application/vnd.ez.api.Version+xml: null
+                                application/vnd.ez.api.Version+xml:
+                                    schema: Version
                                 application/vnd.ez.api.Version+json: null
             /versions:
                 get:
@@ -172,7 +223,8 @@ mediaType: application/xml
                         200:
                             description: success
                             body:
-                                application/vnd.ez.api.VersionList+xml: null
+                                application/vnd.ez.api.VersionList+xml:
+                                    schema: VersionList
                                 application/vnd.ez.api.VersionList+json: null
                 '/{versionNo}':
                     get:
@@ -194,7 +246,7 @@ mediaType: application/xml
                             200:
                                 description: success
                                 body:
-                                    application/vnd.ez.api.Version+xml: null
+                                    application/vnd.ez.api.Version+xml: { schema: Version }
                                     application/vnd.ez.api.Version+json: null
                         queryParameters:
                             fields:
@@ -230,11 +282,12 @@ mediaType: application/xml
                             200:
                                 description: success
                                 body:
-                                    application/vnd.ez.api.Version+xml: null
+                                    application/vnd.ez.api.Version+xml: { schema: Version }
                                     application/vnd.ez.api.Version+json: null
                         body:
                             application/vnd.ez.api.VersionUpdate+json: null
-                            application/vnd.ez.api.VersionUpdate+xml: null
+                            application/vnd.ez.api.VersionUpdate+xml:
+                                schema: VersionUpdate
                         queryParameters:
                             languages:
                                 description: '(comma separated list) restricts the output of translatable fields to the given languages'
@@ -289,7 +342,7 @@ mediaType: application/xml
                                 responses:
                                     404: { description: 'If the object with the given id or the relation does not exist' }
                                     401: { description: 'If the user is not authorized to read this object' }
-                                    200: { description: success, body: { application/vnd.ez.api.Relation+xml: null, application/vnd.ez.api.Relation+json: null } }
+                                    200: { description: success, body: { application/vnd.ez.api.Relation+xml: { schema: Relation }, application/vnd.ez.api.Relation+json: null } }
                             delete:
                                 description: 'Deletes a relation of the given draft.'
                                 headers: {  }
@@ -314,7 +367,7 @@ mediaType: application/xml
                                     description: 'If the object or version with the given id does not exist'
                                 201:
                                     description: success
-                                    body: { application/vnd.ez.api.Relation+xml: null, application/vnd.ez.api.Relation+json: null }
+                                    body: { application/vnd.ez.api.Relation+xml: { schema: Relation }, application/vnd.ez.api.Relation+json: null }
                             body:
                                 application/vnd.ez.api.RelationCreate+xml: null
                                 application/vnd.ez.api.RelationCreate+json: null
@@ -347,11 +400,13 @@ mediaType: application/xml
                         200:
                             description: success
                             body:
-                                application/vnd.ez.api.Location+xml: null
+                                application/vnd.ez.api.Location+xml:
+                                    schema: Location
                                 application/vnd.ez.api.Location+json: null
                     body:
                         application/vnd.ez.api.LocationCreate+json: null
-                        application/vnd.ez.api.LocationCreate+xml: null
+                        application/vnd.ez.api.LocationCreate+xml:
+                            schema: LocationCreate
                 get:
                     description: 'loads all locations for the given content object'
                     headers:
@@ -464,7 +519,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.Location+xml: null
+                            application/vnd.ez.api.Location+xml:
+                                schema: Location
                             application/vnd.ez.api.Location+json: null
             /children:
                 get:
@@ -552,11 +608,13 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.Location+xml: null
+                            application/vnd.ez.api.Location+xml:
+                                schema: Location
                             application/vnd.ez.api.Location+json: null
                 body:
                     application/vnd.ez.api.LocationUpdate+json: null
-                    application/vnd.ez.api.LocationUpdate+xml: null
+                    application/vnd.ez.api.LocationUpdate+xml:
+                        schema: LocationUpdate
             post:
                 description: 'Swaps the content of the location with the content of the given location'
                 headers:
@@ -587,7 +645,8 @@ mediaType: application/xml
                 200:
                     description: success
                     body:
-                        application/vnd.ez.api.View+xml: null
+                        application/vnd.ez.api.View+xml:
+                            schema: View
                         application/vnd.ez.api.View+json: null
             body:
                 application/vnd.ez.api.ViewInput+xml: null
@@ -619,7 +678,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.View+xml: null
+                            application/vnd.ez.api.View+xml:
+                                schema: View
                             application/vnd.ez.api.View+json: null
             /results:
                 get:
@@ -669,7 +729,8 @@ mediaType: application/xml
                 201:
                     description: success
                     body:
-                        application/vnd.ez.api.Section+xml: null
+                        application/vnd.ez.api.Section+xml:
+                            schema: Section
                         application/vnd.ez.api.Section+json: null
             body:
                 application/vnd.ez.api.SectionInput+json: null
@@ -708,7 +769,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.Section+xml: null
+                            application/vnd.ez.api.Section+xml:
+                                schema: Section
                             application/vnd.ez.api.Section+json: null
             patch:
                 description: 'Updates a section'
@@ -727,7 +789,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.Section+xml: null
+                            application/vnd.ez.api.Section+xml:
+                                schema: Section
                             application/vnd.ez.api.Section+json: null
                 body:
                     application/vnd.ez.api.SectionInput+json: null
@@ -747,7 +810,8 @@ mediaType: application/xml
                     204:
                         description: success
                         body:
-                            application/vnd.ez.api.ErrorMessage+xml: null
+                            application/vnd.ez.api.ErrorMessage+xml:
+                                schema: ErrorMessage
                             application/vnd.ez.api.ErrorMessage+json: null
     /trash:
         get:
@@ -761,7 +825,8 @@ mediaType: application/xml
                 200:
                     description: success
                     body:
-                        application/vnd.ez.api.Trash+xml: null
+                        application/vnd.ez.api.Trash+xml:
+                            schema: Trash
                         application/vnd.ez.api.Trash+json: null
             queryParameters:
                 limit:
@@ -842,7 +907,8 @@ mediaType: application/xml
                 201:
                     description: success
                     body:
-                        application/vnd.ez.api.ObjectStateGroup+xml: null
+                        application/vnd.ez.api.ObjectStateGroup+xml:
+                            schema: ObjectStateGroup
                         application/vnd.ez.api.ObjectStateGroup+json: null
             body:
                 application/vnd.ez.api.ObjectStateGroupCreate+json: null
@@ -878,7 +944,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.ObjectStateGroup+xml: null
+                            application/vnd.ez.api.ObjectStateGroup+xml:
+                                schema: ObjectStateGroup
                             application/vnd.ez.api.ObjectStateGroup+json: null
             patch:
                 description: 'Updates an object state group'
@@ -897,7 +964,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.ObjectStateGroup+xml: null
+                            application/vnd.ez.api.ObjectStateGroup+xml:
+                                schema: ObjectStateGroup
                             application/vnd.ez.api.ObjectStateGroup+json: null
                 body:
                     application/vnd.ez.api.ObjectStateGroupUpdate+json: null
@@ -934,7 +1002,8 @@ mediaType: application/xml
                         201:
                             description: success
                             body:
-                                application/vnd.ez.api.ObjectState+xml: null
+                                application/vnd.ez.api.ObjectState+xml:
+                                    schema: ObjectState
                                 application/vnd.ez.api.ObjectState+json: null
                     body:
                         application/vnd.ez.api.ObjectStateGroupCreate+json: null
@@ -970,7 +1039,7 @@ mediaType: application/xml
                             200:
                                 description: success
                                 body:
-                                    application/vnd.ez.api.ObjectState+xml: null
+                                    application/vnd.ez.api.ObjectState+xml: { schema: ObjectState }
                                     application/vnd.ez.api.ObjectState+json: null
                     patch:
                         description: 'Updates an object state'
@@ -989,7 +1058,7 @@ mediaType: application/xml
                             200:
                                 description: success
                                 body:
-                                    application/vnd.ez.api.ObjectState+xml: null
+                                    application/vnd.ez.api.ObjectState+xml: { schema: ObjectState }
                                     application/vnd.ez.api.ObjectState+json: null
                         body:
                             application/vnd.ez.api.ObjectStateUpdate+json: null
@@ -1026,7 +1095,8 @@ mediaType: application/xml
                 201:
                     description: success
                     body:
-                        application/vnd.ez.api.UrlAlias+xml: null
+                        application/vnd.ez.api.UrlAlias+xml:
+                            schema: UrlAlias
                         application/vnd.ez.api.UrlAlias+json: null
             body:
                 application/vnd.ez.api.UrlAliasCreate+json: null
@@ -1058,7 +1128,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.UrlAlias+xml: null
+                            application/vnd.ez.api.UrlAlias+xml:
+                                schema: UrlAlias
                             application/vnd.ez.api.UrlAlias+json: null
             delete:
                 description: 'the given url alias is deleted'
@@ -1092,7 +1163,8 @@ mediaType: application/xml
                 201:
                     description: success
                     body:
-                        application/vnd.ez.api.UrlWildcard+xml: null
+                        application/vnd.ez.api.UrlWildcard+xml:
+                            schema: UrlWildcard
                         application/vnd.ez.api.UrlWildcard+json: null
             body:
                 application/vnd.ez.api.UrlWildcardCreate+json: null
@@ -1124,7 +1196,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.UrlWildcard+xml: null
+                            application/vnd.ez.api.UrlWildcard+xml:
+                                schema: UrlWildcard
                             application/vnd.ez.api.UrlWildcard+json: null
             delete:
                 description: 'the given url wildcard is deleted'
@@ -1158,7 +1231,8 @@ mediaType: application/xml
                 201:
                     description: success
                     body:
-                        application/vnd.ez.api.ContentTypeGroup+xml: null
+                        application/vnd.ez.api.ContentTypeGroup+xml:
+                            schema: ContentTypeGroup
                         application/vnd.ez.api.ContentTypeGroup+json: null
             body:
                 application/vnd.ez.api.ContentTypeGroupInput+json: null
@@ -1188,7 +1262,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.ContentTypeGroup+xml: null
+                            application/vnd.ez.api.ContentTypeGroup+xml:
+                                schema: ContentTypeGroup
                             application/vnd.ez.api.ContentTypeGroup+json: null
             patch:
                 description: 'Updates a content type group'
@@ -1215,7 +1290,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.ContentTypeGroup+xml: null
+                            application/vnd.ez.api.ContentTypeGroup+xml:
+                                schema: ContentTypeGroup
                             application/vnd.ez.api.ContentTypeGroup+json: null
                 body:
                     application/vnd.ez.api.ContentTypeGroupInput+json: null
@@ -1273,11 +1349,13 @@ mediaType: application/xml
                         201:
                             description: success
                             body:
-                                application/vnd.ez.api.ContentType+xml: null
+                                application/vnd.ez.api.ContentType+xml:
+                                    schema: ContentType
                                 application/vnd.ez.api.ContentType+json: null
                     body:
                         application/vnd.ez.api.ContentTypeCreate+json: null
-                        application/vnd.ez.api.ContentTypeCreate+xml: null
+                        application/vnd.ez.api.ContentTypeCreate+xml:
+                            schema: ContentTypeCreate
                     queryParameters:
                         publish:
                             description: '(default false) If true the content type is published after creating'
@@ -1308,7 +1386,8 @@ mediaType: application/xml
                             application/vnd.ez.api.ContentTypeInfo+json: null
                 body:
                     application/vnd.ez.api.ContentTypeUpdate+json: null
-                    application/vnd.ez.api.ContentTypeUpdate+xml: null
+                    application/vnd.ez.api.ContentTypeUpdate+xml:
+                        schema: ContentTypeUpdate
             get:
                 description: 'Returns the content type given by id'
                 headers:
@@ -1322,7 +1401,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.ContentType+xml: null
+                            application/vnd.ez.api.ContentType+xml:
+                                schema: ContentType
                             application/vnd.ez.api.ContentType+json: null
             /draft:
                 patch:
@@ -1352,7 +1432,8 @@ mediaType: application/xml
                                 application/vnd.ez.api.ContentTypeInfo+json: null
                     body:
                         application/vnd.ez.api.ContentTypeUpdate+json: null
-                        application/vnd.ez.api.ContentTypeUpdate+xml: null
+                        application/vnd.ez.api.ContentTypeUpdate+xml:
+                            schema: ContentTypeUpdate
                 /fielddefinitions:
                     post:
                         description: 'Creates a new field definition for the given content type'
@@ -1375,11 +1456,12 @@ mediaType: application/xml
                             201:
                                 description: success
                                 body:
-                                    application/vnd.ez.api.FieldDefinition+xml: null
+                                    application/vnd.ez.api.FieldDefinition+xml: { schema: FieldDefinition }
                                     application/vnd.ez.api.FieldDefinition+json: null
                         body:
                             application/vnd.ez.api.FieldDefinitionCreate+json: null
-                            application/vnd.ez.api.FieldDefinitionCreate+xml: null
+                            application/vnd.ez.api.FieldDefinitionCreate+xml:
+                                schema: FieldDefinitionCreate
                     /<ID>:
                         get:
                             description: 'Returns the field definition given by id'
@@ -1389,7 +1471,7 @@ mediaType: application/xml
                             responses:
                                 200:
                                     description: success
-                                    body: { application/vnd.ez.api.FieldDefinition+xml: null, application/vnd.ez.api.FieldDefinition+json: null }
+                                    body: { application/vnd.ez.api.FieldDefinition+xml: { schema: FieldDefinition }, application/vnd.ez.api.FieldDefinition+json: null }
                         put:
                             description: 'Updates the attributes of a field definitions'
                             headers:
@@ -1406,10 +1488,11 @@ mediaType: application/xml
                                     description: 'If a field definition with the given new identifier already exists in the given content type.'
                                 200:
                                     description: success
-                                    body: { application/vnd.ez.api.FieldDefinition+xml: null, application/vnd.ez.api.FieldDefinition+json: null }
+                                    body: { application/vnd.ez.api.FieldDefinition+xml: { schema: FieldDefinition }, application/vnd.ez.api.FieldDefinition+json: null }
                             body:
                                 application/vnd.ez.api.FieldDefinitionUpdate+json: null
-                                application/vnd.ez.api.FieldDefinitionUpdate+xml: null
+                                application/vnd.ez.api.FieldDefinitionUpdate+xml:
+                                    schema: FieldDefinitionUpdate
                         delete:
                             description: 'the given field definition is deleted'
                             headers: {  }
@@ -1572,7 +1655,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.UserGroup+xml: null
+                            application/vnd.ez.api.UserGroup+xml:
+                                schema: UserGroup
                             application/vnd.ez.api.UserGroup+json: null
             /subgroups:
                 post:
@@ -1594,11 +1678,13 @@ mediaType: application/xml
                         201:
                             description: success
                             body:
-                                application/vnd.ez.api.UserGroup+xml: null
+                                application/vnd.ez.api.UserGroup+xml:
+                                    schema: UserGroup
                                 application/vnd.ez.api.UserGroup+json: null
                     body:
                         application/vnd.ez.api.UserGroupCreate+json: null
-                        application/vnd.ez.api.UserGroupCreate+xml: null
+                        application/vnd.ez.api.UserGroupCreate+xml:
+                            schema: UserGroupCreate
             patch:
                 description: 'Updates a user group'
                 headers:
@@ -1622,11 +1708,13 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.UserGroup+xml: null
+                            application/vnd.ez.api.UserGroup+xml:
+                                schema: UserGroup
                             application/vnd.ez.api.UserGroup+json: null
                 body:
                     application/vnd.ez.api.UserGroupUpdate+json: null
-                    application/vnd.ez.api.UserGroupUpdate+xml: null
+                    application/vnd.ez.api.UserGroupUpdate+xml:
+                        schema: UserGroupUpdate
             delete:
                 description: 'the given user group is deleted'
                 headers: {  }
@@ -1675,11 +1763,13 @@ mediaType: application/xml
                         201:
                             description: success
                             body:
-                                application/vnd.ez.api.User+xml: null
+                                application/vnd.ez.api.User+xml:
+                                    schema: User
                                 application/vnd.ez.api.User+json: null
                     body:
                         application/vnd.ez.api.UserCreate+json: null
-                        application/vnd.ez.api.UserCreate+xml: null
+                        application/vnd.ez.api.UserCreate+xml:
+                            schema: UserCreate
             '/roles for user group ':
                 /user:
                     /users:
@@ -1820,7 +1910,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.User+xml: null
+                            application/vnd.ez.api.User+xml:
+                                schema: User
                             application/vnd.ez.api.User+json: null
             patch:
                 description: 'Updates a user'
@@ -1847,11 +1938,13 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.User+xml: null
+                            application/vnd.ez.api.User+xml:
+                                schema: User
                             application/vnd.ez.api.User+json: null
                 body:
                     application/vnd.ez.api.UserUpdate+json: null
-                    application/vnd.ez.api.UserUpdate+xml: null
+                    application/vnd.ez.api.UserUpdate+xml:
+                        schema: UserUpdate
             delete:
                 description: 'the given user is deleted'
                 headers: {  }
@@ -1944,7 +2037,8 @@ mediaType: application/xml
                 201:
                     description: success
                     body:
-                        application/vnd.ez.api.Role+xml: null
+                        application/vnd.ez.api.Role+xml:
+                            schema: Role
                         application/vnd.ez.api.Role+json: null
             body:
                 application/vnd.ez.api.RoleInput+json: null
@@ -1989,7 +2083,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.Role+xml: null
+                            application/vnd.ez.api.Role+xml:
+                                schema: Role
                             application/vnd.ez.api.Role+json: null
             patch:
                 description: 'Updates a role'
@@ -2014,7 +2109,8 @@ mediaType: application/xml
                     200:
                         description: success
                         body:
-                            application/vnd.ez.api.Role+xml: null
+                            application/vnd.ez.api.Role+xml:
+                                schema: Role
                             application/vnd.ez.api.Role+json: null
                 body:
                     application/vnd.ez.api.RoleInput+json: null
@@ -2071,7 +2167,7 @@ mediaType: application/xml
                             200:
                                 description: success
                                 body:
-                                    application/vnd.ez.api.Policy+xml: null
+                                    application/vnd.ez.api.Policy+xml: { schema: Policy }
                                     application/vnd.ez.api.Policy+json: null
                     patch:
                         description: 'updates a policy'
@@ -2098,7 +2194,7 @@ mediaType: application/xml
                             200:
                                 description: success
                                 body:
-                                    application/vnd.ez.api.Policy+xml: null
+                                    application/vnd.ez.api.Policy+xml: { schema: Policy }
                                     application/vnd.ez.api.Policy+json: null
                         body:
                             application/vnd.ez.api.PolicyUpdate+xml: null
@@ -2134,7 +2230,8 @@ mediaType: application/xml
                         201:
                             description: success
                             body:
-                                application/vnd.ez.api.Policy+xml: null
+                                application/vnd.ez.api.Policy+xml:
+                                    schema: Policy
                                 application/vnd.ez.api.Policy+json: null
                     body:
                         application/vnd.ez.api.PolicyCreate+xml: null
@@ -2178,12 +2275,13 @@ mediaType: application/xml
                 200:
                     description: success
                     body:
-                        application/vnd.ez.api.Session+xml: null
+                        application/vnd.ez.api.Session+xml:
+                            schema: Session
                         application/vnd.ez.api.Session+json: null
             body:
-                application/vnd.ez.api.SessionInput+xml: null
-                application/vnd.ez.api.SessionInput+json:
+                application/vnd.ez.api.SessionInput+xml:
                     schema: SessionInput
+                application/vnd.ez.api.SessionInput+json: null
         '/{sessionId}':
             /refresh:
                 post:
